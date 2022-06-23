@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
+    "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
     "colors": "^1.4.0",
     "connect-mongo": "^4.6.0",
@@ -25,6 +26,7 @@
     "morgan": "^1.10.0",
     "nodemailer": "^6.7.5",
     "nodemon": "^2.0.16",
+    "otp-generator": "^4.0.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

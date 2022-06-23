@@ -13,6 +13,6 @@ router.post('/login/create-session',passport.authenticate(
 
 router.post('/signup',userController.postSignup)
 
-router.get('/verify/user/:token',userController.verifySignup)
+router.post('/verify/user',userController.verifySignup)
 
 module.exports = router
