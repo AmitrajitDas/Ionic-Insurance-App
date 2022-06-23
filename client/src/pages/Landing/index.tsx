@@ -1,29 +1,21 @@
-import {
-  IonCol,
-  IonGrid,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonRow,
-} from "@ionic/react"
+import { IonGrid, IonRow, IonButton, IonCol } from "@ionic/react"
+import SVG from "../../assets/home.svg"
+import "./landing.styles.css"
 
 const Landing: React.FC = () => (
-  <IonGrid>
-    <IonRow>
+  <IonGrid className='landing-root'>
+    <IonRow className='svg-wrapper center'>
+      <img src={SVG} alt='svg' />
+    </IonRow>
+    <IonRow className='header center'>
       <IonCol>
-        <IonItem>
-          <IonLabel position='floating'>Input Currency</IonLabel>
-          <IonInput></IonInput>
-        </IonItem>
+        Secure best insurance plan that is right for you and your family
       </IonCol>
     </IonRow>
-    <IonRow>
-      <IonCol>
-        <IonItem>
-          <IonLabel position='floating'>Input Currency</IonLabel>
-          <IonInput></IonInput>
-        </IonItem>
-      </IonCol>
+    <IonRow className='btn-wrapper center'>
+      <IonButton color='tertiary' shape='round' className='btn' mode='ios'>
+        Get Started
+      </IonButton>
     </IonRow>
   </IonGrid>
 )
