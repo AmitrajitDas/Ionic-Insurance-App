@@ -83,9 +83,9 @@ module.exports.postSignup = async (req,res)=>{
                     await Newuser.save()
 
 
-                    const nayaNatak = await User.findOne({email:decodedData.email})
-                    nayaNatak.token = token
-                    await nayaNatak.save()
+                    const newEmailUser = await User.findOne({email:decodedData.email})
+                    newEmailUser.token = token
+                    await newEmailUser.save()
                 }
                 console.log(decodedData)
                 res.send({
@@ -93,7 +93,6 @@ module.exports.postSignup = async (req,res)=>{
                     flag:'success'
                 })
             })
-            
         } catch (error) {  
             res.redirect('/login') 
         }
