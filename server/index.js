@@ -53,8 +53,8 @@ app.use(session({
 }))
 
 
-app.use(notFound)
-app.use(errorHandler)
+//app.use(notFound)
+//app.use(errorHandler)
 
 app.use(passport.initialize())
 app.use(passport.session())
