@@ -2,7 +2,7 @@ import { IonGrid, IonRow, IonButton, IonCol } from "@ionic/react"
 import SVG from "../../assets/home.svg"
 import "./landing.styles.css"
 
-const Landing: React.FC = () => (
+const Landing: React.FC<any> = ({ history }) => (
   <IonGrid className='landing-root'>
     <IonRow className='svg-wrapper center'>
       <img src={SVG} alt='svg' />
@@ -13,7 +13,16 @@ const Landing: React.FC = () => (
       </IonCol>
     </IonRow>
     <IonRow className='btn-wrapper center'>
-      <IonButton color='tertiary' shape='round' className='btn' mode='ios'>
+      <IonButton
+        color='tertiary'
+        shape='round'
+        className='btn'
+        mode='ios'
+        onClick={(e) => {
+          e.preventDefault()
+          history.push("/cform")
+        }}
+      >
         Get Started
       </IonButton>
     </IonRow>

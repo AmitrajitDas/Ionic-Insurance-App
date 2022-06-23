@@ -1,4 +1,8 @@
 import { IonContent, setupIonicReact } from "@ionic/react"
+import { IonApp, IonRouterOutlet } from "@ionic/react"
+import { IonReactRouter } from "@ionic/react-router"
+import Header from "./components/Header"
+import Routes from "./routes"
 
 import Layout from "./layout"
 import Landing from "./pages/Landing"
@@ -25,11 +29,14 @@ import "./theme/variables.css"
 setupIonicReact()
 
 const App: React.FC = () => (
-  <Layout>
-    <IonContent>
-      <Landing />
-    </IonContent>
-  </Layout>
+  <IonApp>
+    <Header />
+    <IonReactRouter>
+      <IonRouterOutlet>
+        <Routes />
+      </IonRouterOutlet>
+    </IonReactRouter>
+  </IonApp>
 )
 
 export default App
