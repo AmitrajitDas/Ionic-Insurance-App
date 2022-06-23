@@ -1,17 +1,18 @@
-const mongoose = require("mongoose")
+const mongoose=require('mongoose')
+const dotenv = require("dotenv")
+// mongoose.set('useFindAndModify', false);
 
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.CONNECTION_URL, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    })
+dotenv.config()
 
-    console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline)
-  } catch (error) {
-    console.error(`Error: ${error.message}`.red.underline.bold)
-    process.exit(1)
-  }
-}
+mongoose.connect(`mongodb://127.0.0.1:27017/${process.env.CONNECTION_URL}`,{
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+const db = mongoose.connection
+db.on('error',console.error.bind(console,'error connecting to database'))
 
-module.exports = connectDB
+db.once('open',()=>console.log('Connected to database :: MongoDB'))
+
+
+module.exports= db
+
