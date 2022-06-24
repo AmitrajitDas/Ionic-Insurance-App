@@ -50,6 +50,9 @@ const userSchema = new mongoose.Schema({
     isVerified:{
         type:Boolean,
         default:'false'
+    },
+    token:{
+        type:String
     }
 },{
     timestamps:true

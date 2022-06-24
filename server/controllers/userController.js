@@ -103,6 +103,12 @@ module.exports.postSignup = async (req,res)=>{
             if(latestOtp.email===req.body.email && validUser){
                 const user = new User(req.body);
                 const token = user.generateJWT()
+                const salt = await bcrypt.genSalt(10)
+                user.password = await bcrypt.hash(user.password,salt)
+                user.isVerified = true
+                user.token=token
+
+                
                 await user.save()
 
                 console.log(token)
@@ -113,7 +119,7 @@ module.exports.postSignup = async (req,res)=>{
 
                 return res.send({
                     token:token,
-                    msg:'token successfull'
+                    msg:'token has been generated successfully!'
                 })
             }
         } catch (error) {

@@ -1,5 +1,6 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
+const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
 passport.use(new LocalStrategy({
@@ -12,16 +13,22 @@ function(email,password,done){
             console.log('Error in finding user --> Passport')
             return done(err)
         }
-        if(!user || user.password!==password)
+        if(!user || !check(password,user.password))
         {
             
             console.log('Invalid username/password')
            return done(err,false)
-        }        
+        }
+
         return done(null,user)
     })
 
 }))
+
+const check = async(enteredPass,storedPass)=>{
+    const validUser = await bcrypt.compare(enteredPass,storedPass)
+    return validUser
+}
 
 passport.serializeUser(function(user,done)
 {
