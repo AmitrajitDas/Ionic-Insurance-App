@@ -1,8 +1,9 @@
 import { IonGrid, IonRow, IonButton, IonCol } from "@ionic/react"
+import { RouteComponentProps } from "react-router-dom"
 import SVG from "../../assets/home.svg"
 import "./landing.styles.css"
 
-const Landing: React.FC<any> = ({ history }) => (
+const Landing: React.FC<RouteComponentProps> = ({ history }) => (
   <IonGrid className='landing-root'>
     <IonRow className='svg-wrapper center'>
       <img src={SVG} alt='svg' />
