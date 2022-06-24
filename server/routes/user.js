@@ -13,6 +13,11 @@ router.post('/login/create-session',passport.authenticate(
 
 router.post('/signup',userController.postSignup)
 
+
+router.get('/hello',passport.checkAuthentication,(req,res)=>{
+    console.log("heya")
+})
+
 router.get('/verify/user/:token',userController.verifySignup)
 
 module.exports = router
