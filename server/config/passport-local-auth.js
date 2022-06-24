@@ -1,5 +1,6 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
+const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
 passport.use(new LocalStrategy({
@@ -12,16 +13,27 @@ function(email,password,done){
             console.log('Error in finding user --> Passport')
             return done(err)
         }
-        if(!user || user.password!==password)
+
+        console.log(user)
+        if(!user)
         {
-            
-            console.log('Invalid username/password')
+            console.log('Invalid user')
            return done(err,false)
-        }        
+        }
+
+        if(!bcrypt.compareSync(password,user.password)) 
+        {
+            {
+                console.log('please check your credentials and log back in!')
+               return done(err,false)
+            }
+        }
+
         return done(null,user)
     })
 
 }))
+
 
 passport.serializeUser(function(user,done)
 {
@@ -44,7 +56,6 @@ passport.checkAuthentication = (req,res,next)=>{
     {
         return next()
     }
-
     return res.redirect('/login')
 }
 

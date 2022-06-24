@@ -1,5 +1,6 @@
 const express = require('express')
 const passport = require('passport')
+const passport_local = require('../config/passport-local-auth')
 const router = new express.Router()
 const userController = require('../controllers/userController')
 
@@ -13,11 +14,10 @@ router.post('/login/create-session',passport.authenticate(
 
 router.post('/signup',userController.postSignup)
 
+router.post('/verify/user',userController.verifySignup)
 
-router.get('/hello',passport.checkAuthentication,(req,res)=>{
-    console.log("heya")
-})
+router.get('/logout',userController.logout)
 
-router.get('/verify/user/:token',userController.verifySignup)
+router.get('/hello',passport_local.checkAuthentication,userController.hii)
 
 module.exports = router

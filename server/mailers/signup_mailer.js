@@ -3,14 +3,14 @@ const sgMail = require('@sendgrid/mail')
 
 exports.signup = (obj)/*email,token*/=>{
    console.log('Inside Signup mailer')
-    const tokenVal = obj.token
-    console.log('******* token value from VerifyUser_mailer',tokenVal)
+    const otpVal = obj.otp
+    console.log('******* token value from VerifyUser_mailer',otpVal)
 
     nodemailer.transporter.sendMail({
         from:'team.wetrishul@gmail.com',
         to: obj.email,
         subject:'Verify Account',
-        html:'<p>Click <a href="http://localhost:5000/verify/user/'+ tokenVal + '"a>Please verify your account!!</a></p>'              
+        html:'<p>'+otpVal+'</p>'              
     },(err,info)=>{
         if(err){
             console.log('Error in sending Mail', err)
