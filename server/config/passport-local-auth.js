@@ -13,6 +13,8 @@ function(email,password,done){
             console.log('Error in finding user --> Passport')
             return done(err)
         }
+
+        console.log(user)
         if(!user)
         {
             console.log('Invalid user')
@@ -54,7 +56,6 @@ passport.checkAuthentication = (req,res,next)=>{
     {
         return next()
     }
-
     return res.redirect('/login')
 }
 

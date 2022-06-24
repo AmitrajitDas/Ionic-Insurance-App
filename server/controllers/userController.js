@@ -141,3 +141,15 @@ module.exports.postSignup = async (req,res)=>{
             })  
         }
     }
+
+    module.exports.logout = function (req,res){
+        req.session.destroy((err) => {
+            if (err) {
+              return console.log(err);
+            }})
+            res.send("logged out");
+    }
+
+    module.exports.hii  = (req,res)=>{
+        console.log('hii')
+    }
