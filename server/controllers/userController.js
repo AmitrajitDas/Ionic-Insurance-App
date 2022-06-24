@@ -28,7 +28,11 @@ module.exports.postlogin = async(req,res)=>{
         
     } catch (error) {
         
-        console.log("post login ka naya natak wala error");
+        console.log(error.message);
+
+        return res.status(500).json({
+            message: "server error!"
+        });
     }
 }
 
@@ -74,14 +78,19 @@ module.exports.postSignup = async (req,res)=>{
 
                 signUpMailer.signup(obj)
 
-                res.send({
-                    flag:'otp created successfully',
-                    msg:'Go verify Your Email Dude!'
-                })
+                return res.status(200).json({
+                    data: {
+                        done:"yes" 
+                    },
+                    message: "Go verify Your Email Dude!"
+                });
            
         } catch (error) {
-            console.log(error)
-            res.redirect('back')
+            console.log(error.message)
+
+            return res.status(500).json({
+                message: "Server error!"
+            });
         }
     }
 
@@ -117,13 +126,18 @@ module.exports.postSignup = async (req,res)=>{
                     email:latestOtp.email
                 })
 
-                return res.send({
-                    token:token,
-                    msg:'token has been generated successfully!'
+                return res.status(200).json({
+                    data: {
+                        token:token 
+                    },
+                    msg:"User verification successful!"
                 })
             }
         } catch (error) {
-            console.log(error)  
-            res.redirect('/login') 
+
+            console.log(error.message)
+            return res.status(500).json({
+                msg:"User verification unsuccessful!"
+            })  
         }
     }

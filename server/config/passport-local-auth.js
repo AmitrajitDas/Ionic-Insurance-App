@@ -13,11 +13,18 @@ function(email,password,done){
             console.log('Error in finding user --> Passport')
             return done(err)
         }
-        if(!user || !check(password,user.password))
+        if(!user)
         {
-            
-            console.log('Invalid username/password')
+            console.log('Invalid user')
            return done(err,false)
+        }
+
+        if(!bcrypt.compareSync(password,user.password)) 
+        {
+            {
+                console.log('please check your credentials and log back in!')
+               return done(err,false)
+            }
         }
 
         return done(null,user)
@@ -25,10 +32,6 @@ function(email,password,done){
 
 }))
 
-const check = async(enteredPass,storedPass)=>{
-    const validUser = await bcrypt.compare(enteredPass,storedPass)
-    return validUser
-}
 
 passport.serializeUser(function(user,done)
 {
