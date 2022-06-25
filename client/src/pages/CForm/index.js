@@ -16,14 +16,14 @@ export default class MyForm extends React.Component {
       {
         tag: "input",
         type: "email",
-        name: "email",
+        name: "emailLogin",
         "cf-questions": "Enter your email!",
         "cf-input-placeholder": "Email",
       },
       {
         tag: "input",
         type: "password",
-        name: "password",
+        name: "passwordLogin",
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
@@ -33,7 +33,7 @@ export default class MyForm extends React.Component {
       {
         tag: "input",
         type: "email",
-        name: "email",
+        name: "emailSignup",
         "cf-questions": "Enter your email!",
         "cf-input-placeholder": "Email",
       },
@@ -94,7 +94,7 @@ export default class MyForm extends React.Component {
       {
         tag: "input",
         type: "password",
-        name: "password",
+        name: "passwordSignup",
         "cf-questions": "Enter a password!",
         "cf-input-placeholder": "Password",
       },
@@ -126,26 +126,26 @@ export default class MyForm extends React.Component {
   //   tags: startTags                                        // initialize json for cf-form    });
   // this.elem.appendChild(this.cf.el);
 
-  flowCallback = async (dto, success, error, auth) => {
+  flowCallback = async (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
-    if (dto.tag.name === "email" && dto.tag.value.length > 0 && !auth) {
-      const { email } = formData
+    if (dto.tag.name === "emailSignup" && dto.tag.value.length > 0) {
+      const { emailSignup } = formData
       const { data } = await axios.post(`${process.env.REACT_APP_API}/signup`, {
-        email,
+        email: emailSignup,
       })
       console.log("API call", data)
     }
-    if (dto.tag.name === "password" && dto.tag.value.length > 0) {
+    if (dto.tag.name === "passwordSignup" && dto.tag.value.length > 0) {
       const {
         otp,
         firstName,
         lastName,
-        email,
+        emailSignup,
         age,
         location,
         occupation,
-        password,
+        passwordSignup,
       } = formData
 
       try {
@@ -155,33 +155,34 @@ export default class MyForm extends React.Component {
             otp,
             firstName,
             lastName,
-            email,
+            email: emailSignup,
             age,
             location,
             occupation,
-            password,
+            password: passwordSignup,
           }
         )
 
         console.log(data.data.token)
         localStorage.setItem("token", JSON.stringify(data.data.token))
+        this.cf.addRobotChatResponse("You are signed up, now login")
       } catch (error) {
         console.log(error)
       }
     }
-    if (dto.tag.name === "password" && dto.tag.value.length > 0 && auth) {
-      const { email, password } = formData
+    if (dto.tag.name === "passwordLogin" && dto.tag.value.length > 0) {
+      const { emailLogin, passwordLogin } = formData
       try {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API}/login/create-session`,
           {
-            email,
-            password,
-          },
-          { withCredentials: true }
+            email: emailLogin,
+            password: passwordLogin,
+          }
         )
         console.log(data)
-        // sessionStorage.setItem("user", JSON.stringify(data.data.user))
+        sessionStorage.setItem("user", JSON.stringify(data.data.user))
+        this.cf.addRobotChatResponse("You are logged in successfully")
       } catch (error) {
         console.log(error)
       }
@@ -199,7 +200,7 @@ export default class MyForm extends React.Component {
         robotImage: Robot,
         submitCallback: this.submitCallback,
         preventAutoFocus: true,
-        flowStepCallback: this.flowCallback(auth),
+        flowStepCallback: this.flowCallback,
         // loadExternalStyleSheet: false
       },
       tags: auth ? this.loginFields : this.signupFields,
@@ -210,9 +211,7 @@ export default class MyForm extends React.Component {
   submitCallback() {
     var formDataSerialized = this.cf.getFormData(true)
     console.log("Formdata, obj:", formDataSerialized)
-    this.cf.addRobotChatResponse(
-      "You are done. Check the dev console for form data output."
-    )
+    this.cf.addRobotChatResponse("You are done. Thank You")
   }
   render() {
     return (

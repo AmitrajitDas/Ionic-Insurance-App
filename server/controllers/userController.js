@@ -18,7 +18,7 @@ module.exports.postlogin = async (req, res) => {
     email: req.user.email,
   })
   try {
-    return res.status(200).json({
+    return res.status(200).send({
       data: {
         done: "yes",
         user,
