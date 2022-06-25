@@ -1,15 +1,13 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import App from "./App"
-import { AuthProvider } from "./context/useAuth"
+
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import reportWebVitals from "./reportWebVitals"
 
 ReactDOM.render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 )

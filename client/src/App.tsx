@@ -1,11 +1,9 @@
-import { IonContent, setupIonicReact } from "@ionic/react"
+import { setupIonicReact } from "@ionic/react"
 import { IonApp, IonRouterOutlet } from "@ionic/react"
 import { IonReactRouter } from "@ionic/react-router"
 import Header from "./components/Header"
 import Routes from "./routes"
-
-import Layout from "./layout"
-import Landing from "./pages/Landing"
+import { AuthProvider } from "./context/useAuth"
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css"
@@ -33,7 +31,9 @@ const App: React.FC = () => (
     <Header />
     <IonReactRouter>
       <IonRouterOutlet>
-        <Routes />
+        <AuthProvider>
+          <Routes />
+        </AuthProvider>
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>

@@ -1,10 +1,13 @@
 import axios from "axios"
 
 export const signup = async (email: string): Promise<void> => {
-  const { data } = await axios.post(`${process.env.REACT_APP_API}/signup`, {
-    email,
-  })
-  console.log("API call", data)
+  const { data } = await axios.post(
+    `${process.env.REACT_APP_API}/signup`,
+    {
+      email,
+    },
+    { withCredentials: true }
+  )
 }
 
 export const verifySignup = async (
@@ -30,9 +33,9 @@ export const verifySignup = async (
       location,
       occupation,
       password,
-    }
+    },
+    { withCredentials: true }
   )
-  console.log(data)
   return data
 }
 
@@ -42,13 +45,13 @@ export const login = async (email: string, password: string): Promise<any> => {
     {
       email,
       password,
-    }
+    },
+    { withCredentials: true }
   )
-  console.log(data)
+
   return data
 }
 
 export const logout = async (): Promise<void> => {
   const { data } = await axios.post(`${process.env.REACT_APP_API}/logout`)
-  console.log(data)
 }

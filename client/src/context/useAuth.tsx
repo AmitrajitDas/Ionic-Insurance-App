@@ -88,7 +88,7 @@ export function AuthProvider({
       )
       .then((user) => {
         setUser(user)
-        history.push("/")
+        console.log("API func call", user)
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
@@ -101,7 +101,7 @@ export function AuthProvider({
       .login(email, password)
       .then((user) => {
         setUser(user)
-        history.push("/")
+        console.log("API func call", user)
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
@@ -125,9 +125,7 @@ export function AuthProvider({
   )
 
   return (
-    <AuthContext.Provider value={memoedValue}>
-      {!loadingInitial && children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>
   )
 }
 
