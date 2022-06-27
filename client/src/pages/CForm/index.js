@@ -4,14 +4,43 @@ import useAuth from "../../context/useAuth"
 import Robot from "../../assets/robot.png"
 import User from "../../assets/user.png"
 import axios from "axios"
-export default class MyForm extends React.Component {
+import { withRouter } from "react-router-dom"
+
+class MyForm extends React.Component {
   constructor(props) {
     super(props)
     const { user, loading, error, signup, verifySignup, login, logout } =
       this.props.props
+
     console.log(loading)
     console.log(error)
     console.log(user)
+
+    this.state = {
+      user: {},
+    }
+
+    this.policyField = [
+      {
+        tag: "select",
+        name: "flowMethod",
+        "cf-questions": "Do you want to buy quotations now?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Proceed further, I want to choose quotations",
+            value: "proceed",
+          },
+          {
+            tag: "option",
+            "cf-label": "No, I'll come back later",
+            value: "decline",
+          },
+        ],
+      },
+    ]
+
     this.loginFields = [
       {
         tag: "input",
@@ -27,6 +56,7 @@ export default class MyForm extends React.Component {
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
+      ...this.policyField,
     ]
 
     this.signupFields = [
@@ -84,7 +114,7 @@ export default class MyForm extends React.Component {
         tag: "select",
         name: "sex",
         "cf-questions": "Choose your Sex!",
-        multiple: true,
+        multiple: false,
         children: [
           { tag: "option", "cf-label": "Male", value: "male" },
           { tag: "option", "cf-label": "Female", value: "female" },
@@ -126,15 +156,37 @@ export default class MyForm extends React.Component {
   //   tags: startTags                                        // initialize json for cf-form    });
   // this.elem.appendChild(this.cf.el);
 
+  logout = async (error) => {
+    const { data } = await axios.get(`${process.env.REACT_APP_API}/logout`)
+    try {
+      console.log(data)
+      sessionStorage.clear()
+      const { history } = this.props
+      history.push("/")
+    } catch (err) {
+      this.cf.addRobotChatResponse(err)
+      return error()
+    }
+  }
+
   flowCallback = async (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
     if (dto.tag.name === "emailSignup" && dto.tag.value.length > 0) {
       const { emailSignup } = formData
-      const { data } = await axios.post(`${process.env.REACT_APP_API}/signup`, {
-        email: emailSignup,
-      })
-      console.log("API call", data)
+      try {
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API}/signup`,
+          {
+            email: emailSignup,
+          }
+        )
+        console.log("API call", data)
+      } catch (error) {
+        console.log(error)
+        this.cf.addRobotChatResponse(error)
+        return error()
+      }
     }
     if (dto.tag.name === "passwordSignup" && dto.tag.value.length > 0) {
       const {
@@ -168,6 +220,8 @@ export default class MyForm extends React.Component {
         this.cf.addRobotChatResponse("You are signed up, now login")
       } catch (error) {
         console.log(error)
+        this.cf.addRobotChatResponse(error)
+        return error()
       }
     }
     if (dto.tag.name === "passwordLogin" && dto.tag.value.length > 0) {
@@ -181,10 +235,24 @@ export default class MyForm extends React.Component {
           }
         )
         console.log(data)
-        sessionStorage.setItem("user", JSON.stringify(data.data.user))
+        const { data: userData } = data
+        const { user } = userData
+        this.setState({ user })
+        sessionStorage.setItem("user", JSON.stringify(user))
         this.cf.addRobotChatResponse("You are logged in successfully")
       } catch (error) {
         console.log(error)
+        this.cf.addRobotChatResponse(error)
+        return error()
+      }
+    }
+
+    if (dto.tag.name === "flowMethod") {
+      console.log(dto.tag.value)
+      if (dto.tag.value[0] === "decline") {
+        this.logout(error)
+      } else {
+        this.cf.addRobotChatResponse("Quotations are under development")
       }
     }
     success()
@@ -221,3 +289,5 @@ export default class MyForm extends React.Component {
     )
   }
 }
+
+export default withRouter(MyForm)
