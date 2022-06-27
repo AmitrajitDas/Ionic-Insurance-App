@@ -18,6 +18,7 @@ class MyForm extends React.Component {
 
     this.state = {
       user: {},
+      auth: false,
     }
 
     this.policyField = [
@@ -60,6 +61,24 @@ class MyForm extends React.Component {
     ]
 
     this.signupFields = [
+      {
+        tag: "select",
+        name: "authMethod",
+        "cf-questions": "Hey there, welcome to WingSurance",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Are you a new user? Signup",
+            value: "signup",
+          },
+          {
+            tag: "option",
+            "cf-label": "Already registered? Login",
+            value: "login",
+          },
+        ],
+      },
       {
         tag: "input",
         type: "email",
@@ -172,6 +191,14 @@ class MyForm extends React.Component {
   flowCallback = async (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
+    if (dto.tag.name === "authMethod") {
+      if (dto.tag.value[0] === "login") this.setState({ auth: true })
+      if (this.state.auth) {
+        this.cf.addTags(this.loginFields, false, 1)
+        // this.cf.remapTagsAndStartFrom(0, this.loginFields, this.signupFields)
+      }
+    }
+
     if (dto.tag.name === "emailSignup" && dto.tag.value.length > 0) {
       const { emailSignup } = formData
       try {
@@ -253,14 +280,15 @@ class MyForm extends React.Component {
         this.logout(error)
       } else {
         this.cf.addRobotChatResponse("Quotations are under development")
+        this.cf.remove()
       }
     }
     success()
   }
 
   componentDidMount() {
-    var token = JSON.parse(localStorage.getItem("token"))
-    var auth = token ? true : false
+    // var token = JSON.parse(localStorage.getItem("token"))
+    // var auth = token ? true : false
     this.cf = ConversationalForm.startTheConversation({
       options: {
         theme: "purple",
@@ -271,7 +299,8 @@ class MyForm extends React.Component {
         flowStepCallback: this.flowCallback,
         // loadExternalStyleSheet: false
       },
-      tags: auth ? this.loginFields : this.signupFields,
+      // tags: auth ? this.loginFields : this.signupFields,
+      tags: this.signupFields,
     })
     this.elem.appendChild(this.cf.el)
   }

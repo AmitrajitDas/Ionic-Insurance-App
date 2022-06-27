@@ -42,7 +42,7 @@ const Header: React.FC = () => {
           />
         </div>
         <IonTitle className='ion-text-center header-title'>
-          Wingsure Policies
+          WingSurance
         </IonTitle>
       </IonToolbar>
     </IonHeader>
