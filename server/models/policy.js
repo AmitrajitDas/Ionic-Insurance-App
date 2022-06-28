@@ -1,34 +1,49 @@
-const mongoose=require('mongoose')
-const db = require('../config/db')
 
-const PolicySchema = new mongoose.Schema({
+const { Sequelize, DataTypes } = require('sequelize');
+const mainDB = require('../config/mainDB');
 
-    policyName:{
-        type:String ,
-        required:true
-    },
-    location:{
-        type: String,
-      
-        required:true
-    },
-    occupation:{
-        type: String,
-        required:true
-    },
-    age:{
-        type:Number,
-        required:true
-    },
-    gender:{
-        type:String,
-        required:true
-    }
+
+const Policy = mainDB.define('Policy', {
+
+    policyID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
+      },
+
+    policyName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+
+  location: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+
+  occupation: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+
+  minAge: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
+  maxAge: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  gender: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+ 
+
 },{
-    timestamps:true
-})
+    timestamps: true
+});
 
-
-const Policy = mongoose.model('Policy', PolicySchema)
 
 module.exports = Policy
