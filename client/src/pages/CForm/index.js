@@ -10,7 +10,7 @@ class MyForm extends React.Component {
     super(props)
 
     this.state = {
-      user: {},
+      // user: {},
       auth: false,
     }
 
@@ -169,19 +169,6 @@ class MyForm extends React.Component {
   //   tags: startTags                                        // initialize json for cf-form    });
   // this.elem.appendChild(this.cf.el);
 
-  logout = async (error) => {
-    const { data } = await axios.get(`${process.env.REACT_APP_API}/logout`)
-    try {
-      console.log(data)
-      sessionStorage.clear()
-      const { history } = this.props
-      history.push("/")
-    } catch (err) {
-      this.cf.addRobotChatResponse(err)
-      return error()
-    }
-  }
-
   flowCallback = async (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
@@ -195,19 +182,7 @@ class MyForm extends React.Component {
 
     if (dto.tag.name === "emailSignup" && dto.tag.value.length > 0) {
       const { emailSignup } = formData
-      try {
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_API}/signup`,
-          {
-            email: emailSignup,
-          }
-        )
-        console.log("API call", data)
-      } catch (error) {
-        console.log(error)
-        this.cf.addRobotChatResponse(error)
-        return error()
-      }
+      this.props.data.signup({ email: emailSignup })
     }
     if (dto.tag.name === "passwordSignup" && dto.tag.value.length > 0) {
       const {
@@ -221,57 +196,35 @@ class MyForm extends React.Component {
         passwordSignup,
       } = formData
 
-      try {
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_API}/verify/user`,
-          {
-            otp,
-            firstName,
-            lastName,
-            email: emailSignup,
-            age,
-            location,
-            occupation,
-            password: passwordSignup,
-          }
-        )
-
-        console.log(data.data.token)
-        localStorage.setItem("token", JSON.stringify(data.data.token))
-        this.cf.addRobotChatResponse("You are signed up, now login")
-      } catch (error) {
-        console.log(error)
-        this.cf.addRobotChatResponse(error)
-        return error()
-      }
+      this.props.data.verifySignup({
+        otp,
+        firstName,
+        lastName,
+        email: emailSignup,
+        age,
+        location,
+        occupation,
+        password: passwordSignup,
+      })
+      const { data: authData } = this.props.data
+      console.log(authData.data.token)
+      localStorage.setItem("token", JSON.stringify(authData.data.token))
     }
     if (dto.tag.name === "passwordLogin" && dto.tag.value.length > 0) {
       const { emailLogin, passwordLogin } = formData
-      try {
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_API}/login/create-session`,
-          {
-            email: emailLogin,
-            password: passwordLogin,
-          }
-        )
-        console.log(data)
-        const { data: userData } = data
-        const { user } = userData
-        this.setState({ user })
-        sessionStorage.setItem("user", JSON.stringify(user))
-        this.cf.addRobotChatResponse("You are logged in successfully")
-      } catch (error) {
-        console.log(error)
-        this.cf.addRobotChatResponse(error)
-        return error()
-      }
+      this.props.data.login({
+        email: emailLogin,
+        password: passwordLogin,
+      })
     }
 
     if (dto.tag.name === "flowMethod") {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "decline") {
-        this.logout(error)
+        this.props.data.logout()
+        sessionStorage.clear()
+        const { history } = this.props
+        history.push("/")
       } else {
         this.cf.addRobotChatResponse("Quotations are under development")
         this.cf.remove()

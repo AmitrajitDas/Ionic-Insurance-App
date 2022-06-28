@@ -1,17 +1,17 @@
 import React, {
   createContext,
-  ReactNode,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react"
 import { useHistory, useLocation } from "react-router-dom"
-import * as authApi from "../api/auth"
+import api from "../api"
 
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {
+  const [data, setData] = useState()
   const [user, setUser] = useState()
   const [error, setError] = useState()
   const [loading, setLoading] = useState(false)
@@ -25,70 +25,51 @@ export function AuthProvider({ children }) {
     if (error) setError(null)
   }, [location.pathname, error])
 
-  const signup = (email) => {
+  const signup = (data) => {
     setLoading(true)
-
-    authApi
-      .signup(email)
+    api
+      .post("/signup", JSON.stringify(data))
       .then((user) => {
-        console.log("API func call", user)
+        setData(user.data)
+        console.log("signup", user.data)
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
   }
 
-  const verifySignup = (
-    otp,
-    firstName,
-    middleName,
-    lastName,
-    email,
-    age,
-    location,
-    occupation,
-    password
-  ) => {
+  const verifySignup = (data) => {
     setLoading(true)
-
-    authApi
-      .verifySignup(
-        otp,
-        firstName,
-        middleName,
-        lastName,
-        email,
-        age,
-        location,
-        occupation,
-        password
-      )
+    api
+      .post("/verify/user", JSON.stringify(data))
       .then((user) => {
-        setUser(user)
-        console.log("API func call", user)
+        setData(user.data.data.token)
+        console.log("verify signup", user.data.data.token)
+        localStorage.setItem("token", JSON.stringify(user.data.data.token))
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
   }
 
-  function login(email, password) {
+  const login = (data) => {
     setLoading(true)
-
-    authApi
-      .login(email, password)
+    api
+      .post("/login/create-session", JSON.stringify(data))
       .then((user) => {
-        setUser(user)
-        console.log("API func call", user)
+        setUser(user.data.data.user)
+        console.log("login", user.data.data.user)
+        sessionStorage.setItem("user", JSON.stringify(user.data.data.user))
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
   }
 
   function logout() {
-    authApi.logout().then(() => setUser(undefined))
+    api.get("/logout").then(() => setUser(undefined))
   }
 
   const memoedValue = useMemo(
     () => ({
+      data,
       user,
       loading,
       error,

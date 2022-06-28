@@ -6,11 +6,9 @@ import {
 } from "@ionic/react"
 import { IonReactRouter } from "@ionic/react-router"
 import { Redirect, Route } from "react-router-dom"
-import Menu from "./components/Menu/Menu"
-import Header from "./components/Header"
-import Landing from "./pages/Landing"
-import MyForm from "./pages/CForm"
 import { AuthProvider } from "./context/useAuth"
+import Menu from "./components/Menu/Menu"
+import Routes from "./routes"
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css"
@@ -41,16 +39,7 @@ const App: React.FC = () => {
           <Menu />
           <IonRouterOutlet id='main'>
             <AuthProvider>
-              <Route path='/' exact={true}>
-                <Header>
-                  <Landing />
-                </Header>
-              </Route>
-              <Route path='/cform/:name' exact={true}>
-                <Header>
-                  <MyForm />
-                </Header>
-              </Route>
+              <Routes />
             </AuthProvider>
           </IonRouterOutlet>
         </IonSplitPane>
