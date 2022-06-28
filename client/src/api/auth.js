@@ -1,6 +1,6 @@
 import axios from "axios"
 
-export const signup = async (email: string): Promise<void> => {
+export const signup = async (email) => {
   const { data } = await axios.post(
     `${process.env.REACT_APP_API}/signup`,
     {
@@ -8,19 +8,20 @@ export const signup = async (email: string): Promise<void> => {
     },
     { withCredentials: true }
   )
+  console.log(data)
 }
 
 export const verifySignup = async (
-  otp: string,
-  firstName: string,
-  middleName: string,
-  lastName: string,
-  email: string,
-  age: number,
-  location: string,
-  occupation: string,
-  password: string
-): Promise<any> => {
+  otp,
+  firstName,
+  middleName,
+  lastName,
+  email,
+  age,
+  location,
+  occupation,
+  password
+) => {
   const { data } = await axios.post(
     `${process.env.REACT_APP_API}/verify/user`,
     {
@@ -39,7 +40,7 @@ export const verifySignup = async (
   return data
 }
 
-export const login = async (email: string, password: string): Promise<any> => {
+export const login = async (email, password) => {
   const { data } = await axios.post(
     `${process.env.REACT_APP_API}/login/create-session`,
     {
@@ -52,6 +53,6 @@ export const login = async (email: string, password: string): Promise<any> => {
   return data
 }
 
-export const logout = async (): Promise<void> => {
+export const logout = async () => {
   const { data } = await axios.post(`${process.env.REACT_APP_API}/logout`)
 }

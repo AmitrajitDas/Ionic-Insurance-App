@@ -1,6 +1,5 @@
 import React from "react"
 import { ConversationalForm } from "conversational-form"
-import useAuth from "../../context/useAuth"
 import Robot from "../../assets/robot.png"
 import User from "../../assets/user.png"
 import axios from "axios"
@@ -9,12 +8,6 @@ import { withRouter } from "react-router-dom"
 class MyForm extends React.Component {
   constructor(props) {
     super(props)
-    const { user, loading, error, signup, verifySignup, login, logout } =
-      this.props.props
-
-    console.log(loading)
-    console.log(error)
-    console.log(user)
 
     this.state = {
       user: {},
@@ -64,7 +57,8 @@ class MyForm extends React.Component {
       {
         tag: "select",
         name: "authMethod",
-        "cf-questions": "Hey there, welcome to WingSurance",
+        "cf-questions":
+          "Hey there, I'm Wingbot. I'll guide you through the process",
         multiple: false,
         children: [
           {

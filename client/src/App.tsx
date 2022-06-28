@@ -1,8 +1,15 @@
-import { setupIonicReact } from "@ionic/react"
-import { IonApp, IonRouterOutlet } from "@ionic/react"
+import {
+  IonApp,
+  IonRouterOutlet,
+  IonSplitPane,
+  setupIonicReact,
+} from "@ionic/react"
 import { IonReactRouter } from "@ionic/react-router"
+import { Redirect, Route } from "react-router-dom"
+import Menu from "./components/Menu/Menu"
 import Header from "./components/Header"
-import Routes from "./routes"
+import Landing from "./pages/Landing"
+import MyForm from "./pages/CForm"
 import { AuthProvider } from "./context/useAuth"
 
 /* Core CSS required for Ionic components to work properly */
@@ -26,17 +33,30 @@ import "./theme/variables.css"
 
 setupIonicReact()
 
-const App: React.FC = () => (
-  <IonApp>
-    <Header />
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <AuthProvider>
-          <Routes />
-        </AuthProvider>
-      </IonRouterOutlet>
-    </IonReactRouter>
-  </IonApp>
-)
+const App: React.FC = () => {
+  return (
+    <IonApp>
+      <IonReactRouter>
+        <IonSplitPane contentId='main'>
+          <Menu />
+          <IonRouterOutlet id='main'>
+            <AuthProvider>
+              <Route path='/' exact={true}>
+                <Header>
+                  <Landing />
+                </Header>
+              </Route>
+              <Route path='/cform/:name' exact={true}>
+                <Header>
+                  <MyForm />
+                </Header>
+              </Route>
+            </AuthProvider>
+          </IonRouterOutlet>
+        </IonSplitPane>
+      </IonReactRouter>
+    </IonApp>
+  )
+}
 
 export default App

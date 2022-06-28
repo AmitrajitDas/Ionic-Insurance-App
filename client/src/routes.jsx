@@ -4,7 +4,7 @@ import Landing from "./pages/Landing"
 import CForm from "./pages/CForm"
 import useAuth from "./context/useAuth"
 
-const Routes: React.FC = () => {
+const Routes = () => {
   const { user, loading, error, signup, verifySignup, login, logout } =
     useAuth()
 

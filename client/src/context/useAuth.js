@@ -9,37 +9,13 @@ import React, {
 import { useHistory, useLocation } from "react-router-dom"
 import * as authApi from "../api/auth"
 
-interface AuthContextType {
-  user?: any
-  loading: boolean
-  error?: any
-  signup: (email: string) => void
-  verifySignup: (
-    otp: string,
-    firstName: string,
-    middleName: string,
-    lastName: string,
-    email: string,
-    age: number,
-    location: string,
-    occupation: string,
-    password: string
-  ) => void
-  login: (email: string, password: string) => void
-  logout: () => void
-}
+const AuthContext = createContext({})
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType)
-
-export function AuthProvider({
-  children,
-}: {
-  children: ReactNode
-}): JSX.Element {
-  const [user, setUser] = useState<any>()
-  const [error, setError] = useState<any>()
-  const [loading, setLoading] = useState<boolean>(false)
-  const [loadingInitial, setLoadingInitial] = useState<boolean>(true)
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState()
+  const [error, setError] = useState()
+  const [loading, setLoading] = useState(false)
+  const [loadingInitial, setLoadingInitial] = useState(true)
 
   const history = useHistory()
   const location = useLocation()
@@ -49,7 +25,7 @@ export function AuthProvider({
     if (error) setError(null)
   }, [location.pathname, error])
 
-  const signup = (email: string) => {
+  const signup = (email) => {
     setLoading(true)
 
     authApi
@@ -62,15 +38,15 @@ export function AuthProvider({
   }
 
   const verifySignup = (
-    otp: string,
-    firstName: string,
-    middleName: string,
-    lastName: string,
-    email: string,
-    age: number,
-    location: string,
-    occupation: string,
-    password: string
+    otp,
+    firstName,
+    middleName,
+    lastName,
+    email,
+    age,
+    location,
+    occupation,
+    password
   ) => {
     setLoading(true)
 
@@ -94,7 +70,7 @@ export function AuthProvider({
       .finally(() => setLoading(false))
   }
 
-  function login(email: string, password: string) {
+  function login(email, password) {
     setLoading(true)
 
     authApi
