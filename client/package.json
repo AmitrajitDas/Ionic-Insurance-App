@@ -3,11 +3,14 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "3.6.0",
     "@capacitor/app": "1.1.1",
-    "@capacitor/core": "3.6.0",
+    "@capacitor/core": "^3.6.0",
     "@capacitor/haptics": "1.1.4",
+    "@capacitor/ios": "3.6.0",
     "@capacitor/keyboard": "1.2.3",
     "@capacitor/status-bar": "1.0.8",
+    "@capacitor/storage": "^1.2.5",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
     "@ionic/react": "^6.0.0",
@@ -71,7 +74,7 @@
     ]
   },
   "devDependencies": {
-    "@capacitor/cli": "3.6.0"
+    "@capacitor/cli": "^3.6.0"
   },
   "description": "An Ionic project"
 }

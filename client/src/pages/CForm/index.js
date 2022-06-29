@@ -169,7 +169,7 @@ class MyForm extends React.Component {
   //   tags: startTags                                        // initialize json for cf-form    });
   // this.elem.appendChild(this.cf.el);
 
-  flowCallback = async (dto, success, error) => {
+  flowCallback = (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
     if (dto.tag.name === "authMethod") {
@@ -208,6 +208,7 @@ class MyForm extends React.Component {
       })
       const { data: authData } = this.props.data
       console.log(authData.data.token)
+      if (!authData.data.token) return error()
       localStorage.setItem("token", JSON.stringify(authData.data.token))
       this.cf.addRobotChatResponse("You are Registered, now Login")
     }
@@ -217,7 +218,7 @@ class MyForm extends React.Component {
         email: emailLogin,
         password: passwordLogin,
       })
-
+      if (!this.props.data.user) return error()
       this.cf.addRobotChatResponse("You are successfully Logged In")
     }
 
@@ -233,7 +234,7 @@ class MyForm extends React.Component {
         this.cf.remove()
       }
     }
-    success()
+    return success()
   }
 
   componentDidMount() {
