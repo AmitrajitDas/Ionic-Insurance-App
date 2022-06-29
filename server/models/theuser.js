@@ -7,8 +7,7 @@ const User = mainDB.define('User', {
 
     userID: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true
+        allowNull: true,
       },
 
     fullName: {
@@ -19,16 +18,10 @@ const User = mainDB.define('User', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-  },
-
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    primaryKey: true
   }
- 
-
 },{
-    timestamps: true
+    timestamps: false
 });
 
 

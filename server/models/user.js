@@ -8,19 +8,7 @@ const db = require('../config/db')
 
 dotenv.config()
 
-const userSchema = new mongoose.Schema({
-
-    firstName:{
-        type:String,
-        required:true
-    },
-    middleName:{
-        type:String,
-    },
-    lastName:{
-        type:String,
-        required:true
-    },
+const authSchema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
@@ -30,18 +18,6 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Email is invalid')
             }
         }
-    },
-    age:{
-        type:Number,
-        required:true
-    },
-    location:{
-        type:String,
-        required:true
-    },
-    occupation:{
-        type:String,
-        required:true
     },
     password:{
         type:String,
@@ -55,11 +31,11 @@ const userSchema = new mongoose.Schema({
         type:String
     }
 },{
-    timestamps:true
+    timestamps:false
 })
 
 
-userSchema.methods.generateJWT = ()=>{
+authSchema.methods.generateJWT = ()=>{
     const token = jwt.sign({
         _id :this._id,
         email:this.email
@@ -68,6 +44,6 @@ userSchema.methods.generateJWT = ()=>{
     return token
 }
 
-const User = mongoose.model('User', userSchema)
+const Auth = mongoose.model('Auth', authSchema)
 
-module.exports = User
+module.exports = Auth

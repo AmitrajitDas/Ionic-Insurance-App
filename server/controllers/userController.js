@@ -1,10 +1,12 @@
-const User = require('../models/user')
+const Auth = require('../models/user')
 const Otp = require('../models/userOtp')
 const dotenv = require("dotenv")
 const jwt  = require('jsonwebtoken');
 const signUpMailer = require('../mailers/signup_mailer')
 const bcrypt = require('bcrypt')
 const otpGen = require('otp-generator')
+const {sequelize,Op} = require('sequelize')
+const User = require('../models/theuser');
 
 dotenv.config()
 
@@ -13,7 +15,7 @@ module.exports.login = (req,res)=>{
 }
 
 module.exports.postlogin = async(req,res)=>{
-    const user = await User.findOne({
+    const user = await Auth.findOne({
         email:req.user.email
     })
     try {
@@ -38,7 +40,7 @@ module.exports.postlogin = async(req,res)=>{
 
 module.exports.postSignup = async (req,res)=>{
 
-    const user = await User.findOne({
+    const user = await Auth.findOne({
         email:req.body.email
     })
 
@@ -110,7 +112,7 @@ module.exports.postSignup = async (req,res)=>{
             console.log(validUser)
 
             if(latestOtp.email===req.body.email && validUser){
-                const user = new User(req.body);
+                const user = new Auth(req.body);
                 const token = user.generateJWT()
                 const salt = await bcrypt.genSalt(10)
                 user.password = await bcrypt.hash(user.password,salt)
@@ -119,6 +121,10 @@ module.exports.postSignup = async (req,res)=>{
 
                 
                 await user.save()
+
+                const name = req.body.firstName+' '+req.body.middleName+' '+req.body.lastName
+                
+                const NewUser =  await User.create({email,fullName:name});
 
                 console.log(token)
 
