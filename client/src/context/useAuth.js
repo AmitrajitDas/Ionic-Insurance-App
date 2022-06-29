@@ -5,6 +5,8 @@ import React, {
   useMemo,
   useState,
 } from "react"
+import { isPlatform } from "@ionic/react"
+import { Storage } from "@capacitor/storage"
 import { useHistory, useLocation } from "react-router-dom"
 import api from "../api"
 
@@ -44,7 +46,9 @@ export function AuthProvider({ children }) {
       .then((user) => {
         setData(user.data.data.token)
         console.log("verify signup", user.data.data.token)
-        localStorage.setItem("token", JSON.stringify(user.data.data.token))
+        if (isPlatform("hybrid"))
+          Storage.set({ key: "token", value: user.data.data.token })
+        else localStorage.setItem("token", JSON.stringify(user.data.data.token))
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
@@ -57,7 +61,9 @@ export function AuthProvider({ children }) {
       .then((user) => {
         setUser(user.data.data.user)
         console.log("login", user.data.data.user)
-        sessionStorage.setItem("user", JSON.stringify(user.data.data.user))
+        if (isPlatform("hybrid"))
+          Storage.set({ key: "user", value: user.data.data.user })
+        else sessionStorage.setItem("user", JSON.stringify(user.data.data.user))
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false))
@@ -78,7 +84,7 @@ export function AuthProvider({ children }) {
       login,
       logout,
     }),
-    [user, loading, error]
+    [data, user, loading, error]
   )
 
   return (
