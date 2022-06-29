@@ -4,7 +4,6 @@ const cors = require("cors")
 const dotenv = require("dotenv")
 const colors = require("colors")
 const morgan = require("morgan")
-const db = require("./config/db")
 const mainDB = require('./config/mainDB')
 const bodyParser = require("body-parser")
 const cookieParser = require('cookie-parser')
@@ -14,7 +13,9 @@ const passport = require('passport')
 const passport_local = require('./config/passport-local-auth')
 const MongoStore = require('connect-mongo')
 const passportJWT = require('./config/passport-jwt-strategy')
+const mysql = require('mysql');
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware")
+var MySQLStore = require('express-mysql-session')(session);
 
 dotenv.config()
 
@@ -34,7 +35,6 @@ app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser())
 
-
 app.use(session({
   name: 'InsuranceApp',
   secret: 'blahblahblah...',
@@ -43,14 +43,13 @@ app.use(session({
   cookie:{
       maxAge: (1000*60*100)
   },
-  store: MongoStore.create({
-      mongoUrl: `mongodb://127.0.0.1:27017/${process.env.CONNECTION_URL}`,
-      autoRemove:'disabled',
-  },
-  function(err)
-  {
-      console.log(err||'connect-mongodb setup ok')
-  })
+  store: new MySQLStore({
+    host:'localhost',
+    port:3306,
+    user:'root',
+    password:'Harikesh3009@699',
+    database:process.env.CONNECTION_URL
+})
 }))
 
 

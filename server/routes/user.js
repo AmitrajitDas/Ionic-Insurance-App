@@ -16,7 +16,7 @@ router.post('/signup',userController.postSignup)
 
 router.post('/verify/user',userController.verifySignup)
 
-router.get('/logout',userController.logout)
+router.get('/logout',passport_local.checkAuthentication,userController.logout)
 
 router.get('/hello',passport_local.checkAuthentication,userController.hii)
 

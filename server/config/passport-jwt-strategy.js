@@ -5,7 +5,7 @@ const dotenv = require("dotenv")
 
 dotenv.config()
 
-const User = require('../models/user')
+const User = require('../models/theuser')
 
 let opts={
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken,

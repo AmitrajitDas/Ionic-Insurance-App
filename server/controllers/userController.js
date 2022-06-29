@@ -1,5 +1,4 @@
-const Auth = require('../models/user')
-const Otp = require('../models/userOtp')
+const Otp = require('../models/otp')
 const dotenv = require("dotenv")
 const jwt  = require('jsonwebtoken');
 const signUpMailer = require('../mailers/signup_mailer')
@@ -15,10 +14,19 @@ module.exports.login = (req,res)=>{
 }
 
 module.exports.postlogin = async(req,res)=>{
-    const user = await Auth.findOne({
-        email:req.user.email
-    })
+   
     try {
+
+        console.log(req.body)
+
+        const user = await User.findOne({
+            where: {
+              email: req.body.email
+            }
+          });
+
+          console.log(req.session)
+
         return res.status(200).json({
             data: {
                 done:"yes",
@@ -39,13 +47,15 @@ module.exports.postlogin = async(req,res)=>{
 }
 
 module.exports.postSignup = async (req,res)=>{
-
-    const user = await Auth.findOne({
-        email:req.body.email
-    })
-
     console.log(req.body)
         try {
+
+            const user = await User.findOne({
+                where: {
+                  email: req.body.email
+                }
+              });
+
 
             if(user)
             {
@@ -67,7 +77,8 @@ module.exports.postSignup = async (req,res)=>{
                     email:req.body.email
                 }
 
-                const newOtp = new Otp({
+
+                const newOtp = await Otp.create({
                     email:obj.email,
                     otp:obj.otp
                 })
@@ -101,35 +112,38 @@ module.exports.postSignup = async (req,res)=>{
         try {
             const otp = req.body.otp
             const email=req.body.email
-            const otpHolder = await Otp.find({email})
+        
+            const otpHolder = await Otp.findOne({
+                where: {
+                  email: email
+                }
+              });
+            console.log(otpHolder.email)
 
-            if(otpHolder.length===0) return res.send('Expired Otp')
-
-            const latestOtp = otpHolder[otpHolder.length-1]
-
-            const validUser = await bcrypt.compare(otp,latestOtp.otp)
+            const validUser = await bcrypt.compare(otp,otpHolder.otp)
 
             console.log(validUser)
 
-            if(latestOtp.email===req.body.email && validUser){
-                const user = new Auth(req.body);
-                const token = user.generateJWT()
+            if(otpHolder.email===req.body.email && validUser){
+                const user = await User.create(req.body);
+                const token = jwt.sign({
+                    _id :this._id,
+                    email:this.email
+                },process.env.jwt_secret,{expiresIn: '1d'})
+
                 const salt = await bcrypt.genSalt(10)
                 user.password = await bcrypt.hash(user.password,salt)
                 user.isVerified = true
                 user.token=token
 
-                
                 await user.save()
-
-                const name = req.body.firstName+' '+req.body.middleName+' '+req.body.lastName
-                
-                const NewUser =  await User.create({email,fullName:name});
 
                 console.log(token)
 
-                const otpDelete = await Otp.deleteMany({
-                    email:latestOtp.email
+                const otpDelete = await Otp.destroy({
+                    where: {
+                        email: otpHolder.email
+                      }
                 })
 
                 return res.status(200).json({
@@ -148,14 +162,20 @@ module.exports.postSignup = async (req,res)=>{
         }
     }
 
-    module.exports.logout = function (req,res){
-        req.session.destroy((err) => {
+    module.exports.logout = async function (req,res){
+
+        try {
+           console.log(req.session)
+         await req.session.destroy((err) => {
             if (err) {
               return console.log(err);
             }})
             res.send("logged out");
+        } catch (error) {
+            console.log(error.msg)
+        }
     }
 
     module.exports.hii  = (req,res)=>{
-        console.log('hii')
+            console.log('hii')
     }
