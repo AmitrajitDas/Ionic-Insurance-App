@@ -209,6 +209,7 @@ class MyForm extends React.Component {
       const { data: authData } = this.props.data
       console.log(authData.data.token)
       localStorage.setItem("token", JSON.stringify(authData.data.token))
+      this.cf.addRobotChatResponse("You are Registered, now Login")
     }
     if (dto.tag.name === "passwordLogin" && dto.tag.value.length > 0) {
       const { emailLogin, passwordLogin } = formData
@@ -216,6 +217,8 @@ class MyForm extends React.Component {
         email: emailLogin,
         password: passwordLogin,
       })
+
+      this.cf.addRobotChatResponse("You are successfully Logged In")
     }
 
     if (dto.tag.name === "flowMethod") {
