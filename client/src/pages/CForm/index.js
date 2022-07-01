@@ -2,7 +2,6 @@ import React from "react"
 import { ConversationalForm } from "conversational-form"
 import Robot from "../../assets/robot.png"
 import User from "../../assets/user.png"
-import axios from "axios"
 import { withRouter } from "react-router-dom"
 
 class MyForm extends React.Component {
@@ -10,7 +9,7 @@ class MyForm extends React.Component {
     super(props)
 
     this.state = {
-      // user: {},
+      // authUser: false,
       auth: false,
     }
 
@@ -49,6 +48,24 @@ class MyForm extends React.Component {
         name: "passwordLogin",
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
+      },
+      {
+        tag: "select",
+        name: "loginConfirm",
+        "cf-questions": "Are you sure you've entered right credentials?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Yes",
+            value: "yes",
+          },
+          {
+            tag: "option",
+            "cf-label": "No",
+            value: "no",
+          },
+        ],
       },
       ...this.policyField,
     ]
@@ -169,7 +186,7 @@ class MyForm extends React.Component {
   //   tags: startTags                                        // initialize json for cf-form    });
   // this.elem.appendChild(this.cf.el);
 
-  flowCallback = (dto, success, error) => {
+  flowCallback = async (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
     if (dto.tag.name === "authMethod") {
@@ -218,8 +235,29 @@ class MyForm extends React.Component {
         email: emailLogin,
         password: passwordLogin,
       })
-      if (!this.props.data.user) return error()
-      this.cf.addRobotChatResponse("You are successfully Logged In")
+
+      // this.cf.addRobotChatResponse("You are successfully Logged In")
+      // return success()
+      // if (this.props.data.user) {
+      //   this.cf.addRobotChatResponse("You are successfully Logged In")
+      //   return success()
+      // } else {
+      //   return error()
+      // }
+    }
+
+    if (dto.tag.name === "loginConfirm") {
+      console.log(dto.tag.value)
+      if (dto.tag.value[0] === "yes") {
+        if (this.props.data.user) {
+          this.cf.addRobotChatResponse("You are successfully Logged In")
+          return success()
+        } else {
+          return error()
+        }
+      } else {
+        window.location.reload(false)
+      }
     }
 
     if (dto.tag.name === "flowMethod") {
