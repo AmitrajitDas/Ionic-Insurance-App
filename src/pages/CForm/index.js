@@ -16,6 +16,9 @@ class MyForm extends React.Component {
       loading: false,
       email: "",
       beneficiaryFlow: [],
+      addbeneficiaryFlow: [],
+      userType: "",
+      beneficiaryID: "",
     }
 
     this.initForm = [
@@ -104,24 +107,28 @@ class MyForm extends React.Component {
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
-      // {
-      //   tag: "select",
-      //   name: "loginConfirm",
-      //   "cf-questions": "Are you sure you've entered right credentials?",
-      //   multiple: false,
-      //   children: [
-      //     {
-      //       tag: "option",
-      //       "cf-label": "Yes",
-      //       value: "yes",
-      //     },
-      //     {
-      //       tag: "option",
-      //       "cf-label": "No",
-      //       value: "no",
-      //     },
-      //   ],
-      // },
+    ]
+
+    this.browsePolicy = [
+      {
+        tag: "select",
+        name: "browsePolicy",
+        "cf-questions":
+          "Do you want to browse policies that are suited for you?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Yes",
+            value: "yes",
+          },
+          {
+            tag: "option",
+            "cf-label": "No",
+            value: "no",
+          },
+        ],
+      },
     ]
 
     this.policyField = [
@@ -140,6 +147,27 @@ class MyForm extends React.Component {
             tag: "option",
             "cf-label": "No, I'll come back later",
             value: "decline",
+          },
+        ],
+      },
+    ]
+
+    this.confirm = [
+      {
+        tag: "select",
+        name: "loginConfirm",
+        "cf-questions": "Are you sure you've entered right credentials?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Yes",
+            value: "yes",
+          },
+          {
+            tag: "option",
+            "cf-label": "No",
+            value: "no",
           },
         ],
       },
@@ -239,10 +267,9 @@ class MyForm extends React.Component {
             authUser: res.data.data,
             beneficiaryFlow: res.data.question,
           })
-
-          // if (isPlatform("hybrid"))
-          //   Storage.set({ key: "user", value: res.data.data })
-          // else sessionStorage.setItem("user", JSON.stringify(res.data.data))
+          if (isPlatform("hybrid"))
+            Storage.set({ key: "user", value: res.data.data })
+          else sessionStorage.setItem("user", JSON.stringify(res.data.data))
         })
         .catch((err) => {
           console.log(err)
@@ -265,15 +292,102 @@ class MyForm extends React.Component {
     //   }
     // }
 
-    if (dto.tag.name === "flowMethod" && dto.tag.value.length > 0) {
+    if (dto.tag.name === "flowMethod" && dto.tag.value[0]) {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "decline") {
         this.props.data.logout()
         sessionStorage.clear()
-        const { history } = this.props
-        history.push("/")
+        // const { history } = this.props
+        // history.push("/")
       } else {
         this.cf.addTags(this.state.beneficiaryFlow, true, 1)
+      }
+    }
+
+    if (dto.tag.name === "question" && dto.tag.value[0]) {
+      console.log(dto.tag.value)
+      this.setState({ loading: true, userType: dto.tag.value[0] })
+      // api
+      //   .get("/hello")
+      //   .then((res) => {
+      //     console.log("test", res.data)
+      //   })
+      //   .catch((err) => {
+      //     console.log(err)
+      //     error()
+      //   })
+      this.setState({ loading: true })
+      api
+        .get(`/getdetails/${dto.tag.value[0]}`)
+        .then((res) => {
+          this.cf.addTags(res.data.addBeneficiary, true, 1)
+          console.log("getDetailForm", res.data)
+        })
+        .catch((err) => {
+          console.log(err)
+          error()
+        })
+        .finally(() => this.setState({ loading: false }))
+    }
+
+    if (dto.tag.name === "sex" && dto.tag.value[0]) {
+      console.log(dto.tag.value)
+      this.setState({ loading: true })
+      const {
+        age,
+        beniEmail,
+        benifullName,
+        location,
+        occupation,
+        sex,
+        benificiaryID,
+        benificiaryRelation,
+      } = formData
+
+      api
+        .post(
+          `/addbeneficiary/${this.state.userType}`,
+          JSON.stringify({
+            benificiaryID:
+              this.state.userType !== "self" && parseInt(benificiaryID),
+            location,
+            userID: this.state.authUser.userId,
+            occupation,
+            benificiaryRelation:
+              this.state.userType !== "self" && benificiaryRelation,
+            gender: sex[0],
+            fullName: benifullName,
+            email: beniEmail,
+            age,
+          })
+        )
+        .then((res) => {
+          this.cf.addTags(this.browsePolicy, true, 1)
+          console.log("addBeni", res.data)
+          this.setState({ beneficiaryID: res.data.msg.beneficiaryID })
+        })
+        .catch((err) => {
+          console.log(err)
+          error()
+        })
+        .finally(() => this.setState({ loading: false }))
+    }
+
+    if (dto.tag.name === "browsePolicy" && dto.tag.value[0]) {
+      console.log(dto.tag.value)
+      if (dto.tag.value[0] === "yes") {
+        api
+          .get(`/getpoliciesforme/${this.state.beneficiaryID}`)
+          .then((res) => {
+            console.log("getPolicies", res.data)
+          })
+          .catch((err) => {
+            console.log(err)
+            error()
+          })
+      } else {
+        const { history } = this.props
+        history.push("/")
       }
     }
 

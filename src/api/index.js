@@ -1,7 +1,9 @@
 import axios from "axios"
 
+// axios.defaults.withCredentials = true
 const api = axios.create({
   baseURL: `${process.env.REACT_APP_API}`,
+  withCrendentials: true,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -9,9 +11,7 @@ const api = axios.create({
 })
 
 api.interceptors.response.use(
-  (response) => {
-    return response
-  },
+  (res) => res,
   (error) => {
     let res = error.response
     console.error(res.status)
