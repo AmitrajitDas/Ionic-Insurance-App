@@ -38,6 +38,24 @@ class MyForm extends React.Component {
           },
         ],
       },
+      {
+        tag: "select",
+        name: "exitConfirm",
+        "cf-questions": "Are you done with the process?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Yes",
+            value: "yes",
+          },
+          {
+            tag: "option",
+            "cf-label": "No",
+            value: "no",
+          },
+        ],
+      },
     ]
 
     this.signupFields = [
@@ -130,7 +148,7 @@ class MyForm extends React.Component {
     this.submitCallback = this.submitCallback.bind(this)
   }
 
-  flowCallback = async (dto, success, error) => {
+  flowCallback = (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
     if (dto.tag.name === "authMethod" && !this.state.auth) {
@@ -142,7 +160,11 @@ class MyForm extends React.Component {
       }
     }
 
-    if (dto.tag.name === "passwordSignup" && dto.tag.value.length > 0) {
+    if (
+      dto.tag.name === "passwordSignup" &&
+      dto.tag.value.length > 0 &&
+      !this.state.auth
+    ) {
       const { fullName, emailSignup, passwordSignup } = formData
       let userID = Math.floor(Math.random() * 9000 + 1000)
       this.setState({ loading: true })
@@ -162,12 +184,16 @@ class MyForm extends React.Component {
         })
         .catch((err) => {
           console.log(err)
-          return error()
+          error()
         })
         .finally(() => this.setState({ loading: false }))
     }
 
-    if (dto.tag.name === "otp" && dto.tag.value.length > 0) {
+    if (
+      dto.tag.name === "otp" &&
+      dto.tag.value.length > 0 &&
+      !this.state.auth
+    ) {
       const { otp } = formData
       this.setState({ loading: true })
       api
@@ -189,7 +215,7 @@ class MyForm extends React.Component {
         })
         .catch((err) => {
           console.log(err)
-          return error()
+          error()
         })
         .finally(() => this.setState({ loading: false }))
     }
@@ -206,22 +232,21 @@ class MyForm extends React.Component {
           })
         )
         .then((res) => {
-          this.cf.addTags(this.policyField, true, 1)
+          this.cf.addRobotChatResponse("You are successfully Logged In")
+          this.cf.addTags(this.policyField, true)
           console.log("login", res.data)
           this.setState({
             authUser: res.data.data,
             beneficiaryFlow: res.data.question,
           })
 
-          if (isPlatform("hybrid"))
-            Storage.set({ key: "user", value: res.data.data })
-          else sessionStorage.setItem("user", JSON.stringify(res.data.data))
-          this.cf.addRobotChatResponse("You are successfully Logged In")
-          this.cf.addTags(this.policyField, true, 1)
+          // if (isPlatform("hybrid"))
+          //   Storage.set({ key: "user", value: res.data.data })
+          // else sessionStorage.setItem("user", JSON.stringify(res.data.data))
         })
         .catch((err) => {
           console.log(err)
-          return error()
+          error()
         })
         .finally(() => this.setState({ loading: false }))
     }
@@ -240,7 +265,7 @@ class MyForm extends React.Component {
     //   }
     // }
 
-    if (dto.tag.name === "flowMethod") {
+    if (dto.tag.name === "flowMethod" && dto.tag.value.length > 0) {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "decline") {
         this.props.data.logout()
@@ -251,7 +276,8 @@ class MyForm extends React.Component {
         this.cf.addTags(this.state.beneficiaryFlow, true, 1)
       }
     }
-    return success()
+
+    success()
   }
 
   componentDidMount() {
@@ -262,9 +288,11 @@ class MyForm extends React.Component {
         theme: "purple",
         userImage: User,
         robotImage: Robot,
+        flowStepCallback: this.flowCallback,
         submitCallback: this.submitCallback,
         preventAutoFocus: true,
-        flowStepCallback: this.flowCallback,
+        hideUserInputOnNoneTextInput: true,
+
         // loadExternalStyleSheet: false
       },
       // tags: auth ? this.loginFields : this.signupFields,

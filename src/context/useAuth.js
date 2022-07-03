@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
-    api.get("/logout").then(() => setUser(undefined))
+    api.post("/logout").then(() => setUser(undefined))
   }
 
   const memoedValue = useMemo(
