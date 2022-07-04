@@ -107,6 +107,24 @@ class MyForm extends React.Component {
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
+      {
+        tag: "select",
+        name: "loginConfirm",
+        "cf-questions": "Are you sure you've entered right credentials?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Yes",
+            value: "yes",
+          },
+          {
+            tag: "option",
+            "cf-label": "No",
+            value: "no",
+          },
+        ],
+      },
     ]
 
     this.browsePolicy = [
@@ -152,27 +170,6 @@ class MyForm extends React.Component {
       },
     ]
 
-    this.confirm = [
-      {
-        tag: "select",
-        name: "loginConfirm",
-        "cf-questions": "Are you sure you've entered right credentials?",
-        multiple: false,
-        children: [
-          {
-            tag: "option",
-            "cf-label": "Yes",
-            value: "yes",
-          },
-          {
-            tag: "option",
-            "cf-label": "No",
-            value: "no",
-          },
-        ],
-      },
-    ]
-
     this.submitCallback = this.submitCallback.bind(this)
   }
 
@@ -188,11 +185,7 @@ class MyForm extends React.Component {
       }
     }
 
-    if (
-      dto.tag.name === "passwordSignup" &&
-      dto.tag.value.length > 0 &&
-      !this.state.auth
-    ) {
+    if (dto.tag.name === "passwordSignup" && dto.tag.value.length > 0) {
       const { fullName, emailSignup, passwordSignup } = formData
       let userID = Math.floor(Math.random() * 9000 + 1000)
       this.setState({ loading: true })
@@ -217,11 +210,7 @@ class MyForm extends React.Component {
         .finally(() => this.setState({ loading: false }))
     }
 
-    if (
-      dto.tag.name === "otp" &&
-      dto.tag.value.length > 0 &&
-      !this.state.auth
-    ) {
+    if (dto.tag.name === "otp" && dto.tag.value.length > 0) {
       const { otp } = formData
       this.setState({ loading: true })
       api
@@ -260,7 +249,6 @@ class MyForm extends React.Component {
           })
         )
         .then((res) => {
-          this.cf.addRobotChatResponse("You are successfully Logged In")
           this.cf.addTags(this.policyField, true)
           console.log("login", res.data)
           this.setState({
@@ -278,19 +266,18 @@ class MyForm extends React.Component {
         .finally(() => this.setState({ loading: false }))
     }
 
-    // if (dto.tag.name === "loginConfirm") {
-    //   console.log(dto.tag.value)
-    //   if (dto.tag.value[0] === "yes") {
-    //     if (this.props.data.user) {
-    //       this.cf.addRobotChatResponse("You are successfully Logged In")
-    //       return success()
-    //     } else {
-    //       return error()
-    //     }
-    //   } else {
-    //     window.location.reload(false)
-    //   }
-    // }
+    if (dto.tag.name === "loginConfirm") {
+      console.log(dto.tag.value)
+      if (dto.tag.value[0] === "yes") {
+        if (this.props.data.user) {
+          this.cf.addRobotChatResponse("You are successfully Logged In")
+        } else {
+          error()
+        }
+      } else {
+        window.location.reload(false)
+      }
+    }
 
     if (dto.tag.name === "flowMethod" && dto.tag.value[0]) {
       console.log(dto.tag.value)
@@ -333,28 +320,29 @@ class MyForm extends React.Component {
     if (dto.tag.name === "sex" && dto.tag.value[0]) {
       console.log(dto.tag.value)
       this.setState({ loading: true })
+      let userType = this.state.userType
       const {
         age,
         beniEmail,
+        beneficiaryID,
         benifullName,
         location,
         occupation,
         sex,
-        benificiaryID,
         benificiaryRelation,
       } = formData
 
       api
         .post(
-          `/addbeneficiary/${this.state.userType}`,
+          `/addbeneficiary/${userType}`,
           JSON.stringify({
-            benificiaryID:
-              this.state.userType !== "self" && parseInt(benificiaryID),
+            beneficiaryID:
+              userType === "self" ? this.state.authUser.userId : beneficiaryID,
             location,
             userID: this.state.authUser.userId,
             occupation,
             benificiaryRelation:
-              this.state.userType !== "self" && benificiaryRelation,
+              userType === "self" ? "self" : benificiaryRelation,
             gender: sex[0],
             fullName: benifullName,
             email: beniEmail,
@@ -406,7 +394,13 @@ class MyForm extends React.Component {
         submitCallback: this.submitCallback,
         preventAutoFocus: true,
         hideUserInputOnNoneTextInput: true,
-
+        userInterfaceOptions: {
+          controlElementsInAnimationDelay: 100,
+          robot: {
+            robotResponseTime: 0,
+            chainedResponseTime: 400,
+          },
+        },
         // loadExternalStyleSheet: false
       },
       // tags: auth ? this.loginFields : this.signupFields,
