@@ -22,7 +22,7 @@ class MyForm extends React.Component {
       addbeneficiaryFlow: [],
       userType: "",
       beneficiaryID: "",
-      sample: "string",
+      continue: false,
     }
 
     this.initForm = [
@@ -112,32 +112,10 @@ class MyForm extends React.Component {
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
-      // {
-      //   tag: "select",
-      //   name: "loginConfirm",
-      //   "cf-questions": "Are you sure you've entered right credentials?",
-      //   multiple: false,
-      //   children: [
-      //     {
-      //       tag: "option",
-      //       "cf-label": "Yes",
-      //       value: "yes",
-      //     },
-      //     {
-      //       tag: "option",
-      //       "cf-label": "No",
-      //       value: "no",
-      //     },
-      //   ],
-      // },
-    ]
-
-    this.browsePolicy = [
       {
         tag: "select",
-        name: "browsePolicy",
-        "cf-questions":
-          "Do you want to browse policies that are suited for you?",
+        name: "loginConfirm",
+        "cf-questions": "Are you sure you've entered right credentials?",
         multiple: false,
         children: [
           {
@@ -168,8 +146,35 @@ class MyForm extends React.Component {
           },
           {
             tag: "option",
+            "cf-label": "Show me previously matched quotations",
+            value: "previous",
+          },
+          {
+            tag: "option",
             "cf-label": "No, I'll come back later",
             value: "decline",
+          },
+        ],
+      },
+    ]
+
+    this.browsePolicy = [
+      {
+        tag: "select",
+        name: "browsePolicy",
+        "cf-questions":
+          "Do you want to browse policies that are suited for you?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Yes",
+            value: "yes",
+          },
+          {
+            tag: "option",
+            "cf-label": "No",
+            value: "no",
           },
         ],
       },
@@ -285,19 +290,19 @@ class MyForm extends React.Component {
         .finally(() => this.setState({ loading: false }))
     }
 
-    // // intermediate for login api call
-    // if (dto.tag.name === "loginConfirm") {
-    //   console.log(dto.tag.value)
-    //   if (dto.tag.value[0] === "yes") {
-    //     if (this.props.data.user) {
-    //       this.cf.addRobotChatResponse("You are successfully Logged In")
-    //     } else {
-    //       error()
-    //     }
-    //   } else {
-    //     window.location.reload(false)
-    //   }
-    // }
+    // intermediate for login api call
+    if (dto.tag.name === "loginConfirm") {
+      console.log(dto.tag.value)
+      if (dto.tag.value[0] === "yes") {
+        if (this.props.data.user) {
+          this.cf.addRobotChatResponse("You are successfully Logged In")
+        } else {
+          error()
+        }
+      } else {
+        window.location.reload(false)
+      }
+    }
 
     /// to handle if the user might come back later
     if (dto.tag.name === "flowMethod" && dto.tag.value[0]) {
@@ -326,8 +331,38 @@ class MyForm extends React.Component {
         .finally(() => this.setState({ loading: false }))
     }
 
+    if (dto.tag.name === "beneficiaryID" && dto.tag.value.length > 0) {
+      console.log(dto.tag.value)
+      this.setState({ loading: true })
+      api
+        .post(
+          "/findbeneficiary",
+          JSON.stringify({ beneficiaryID: dto.tag.value })
+        )
+        .then((res) => {
+          console.log("checkBeni", res.data)
+          this.setState({ beneficiaryID: dto.tag.value })
+          if (res.data.exist) {
+            this.cf.addTags(res.data.asktoAddnew, true, 1)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          error()
+        })
+        .finally(() => this.setState({ loading: false }))
+    }
+
+    if (dto.tag.name === "addnewbeni" && dto.tag.value[0]) {
+      console.log(dto.tag.value[0])
+      if (dto.tag.value[0] === "continue") {
+        this.cf.remapTagsAndStartFrom(14, true, true)
+        this.cf.addTags(this.browsePolicy, true, 1)
+      }
+    }
+
     // adding beneficiary
-    if (dto.tag.name === "sex" && dto.tag.value[0]) {
+    if (dto.tag.name === "sex" && dto.tag.value[0] && !this.state.continue) {
       console.log(dto.tag.value)
       this.setState({ loading: true })
       let userType = this.state.userType
@@ -363,7 +398,6 @@ class MyForm extends React.Component {
         .then((res) => {
           this.cf.addTags(this.browsePolicy, true, 1) // appending browsePolicy flow
           console.log("addBeni", res.data)
-          this.setState({ beneficiaryID: res.data.msg.beneficiaryID })
         })
         .catch((err) => {
           console.log(err)
@@ -460,6 +494,7 @@ class MyForm extends React.Component {
     //   var { data } = JSON.parse(sessionStorage.getItem("user"))
     //   var loggedIn = data ? true : false
     // }
+    // var user = JSON.parse(sessionStorage.getItem("user"))
     this.cf = ConversationalForm.startTheConversation({
       options: {
         theme: "purple",
