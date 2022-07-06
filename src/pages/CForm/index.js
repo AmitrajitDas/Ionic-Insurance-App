@@ -185,6 +185,21 @@ class MyForm extends React.Component {
     this.submitCallback = this.submitCallback.bind(this)
   }
 
+  newBeneficiaryForm = (userType, dto, success, error) => {
+    this.setState({ loading: true, userType: dto.tag.value[0] })
+    api
+      .get(`/getdetails/${userType}`)
+      .then((res) => {
+        this.cf.addTags(res.data.addBeneficiary, true, 1)
+        console.log("getDetailForm", res.data)
+      })
+      .catch((err) => {
+        console.log(err)
+        error()
+      })
+      .finally(() => this.setState({ loading: false }))
+  }
+
   addBeneficiary = (dto, formData, success, error) => {
     this.setState({ loading: true })
     let userType = this.state.userType
@@ -403,19 +418,8 @@ class MyForm extends React.Component {
 
     // if user wanna buy policies for themselves or others
     if (dto.tag.name === "question" && dto.tag.value[0]) {
-      console.log(dto.tag.value)
-      this.setState({ loading: true, userType: dto.tag.value[0] })
-      api
-        .get(`/getdetails/${dto.tag.value[0]}`)
-        .then((res) => {
-          this.cf.addTags(res.data.addBeneficiary, true, 1)
-          console.log("getDetailForm", res.data)
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
+      console.log(dto.tag.value[0])
+      this.newBeneficiaryForm(dto.tag.value[0], dto, success, error)
     }
 
     if (dto.tag.name === "beneficiaryID" && dto.tag.value.length > 0) {
@@ -445,6 +449,8 @@ class MyForm extends React.Component {
       if (dto.tag.value[0] === "continue") {
         this.cf.remapTagsAndStartFrom(14, true, true)
         this.cf.addTags(this.browsePolicy, true, 1)
+      } else if (dto.tag.value[0] === "add other benificiary") {
+        this.newBeneficiaryForm("others", dto, success, error)
       }
     }
 
