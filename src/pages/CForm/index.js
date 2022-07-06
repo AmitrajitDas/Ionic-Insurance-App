@@ -23,6 +23,8 @@ class MyForm extends React.Component {
       userType: "",
       beneficiaryID: "",
       continue: false,
+      policyName: "",
+      unboughtPolicies: [],
     }
 
     this.initForm = [
@@ -146,8 +148,8 @@ class MyForm extends React.Component {
           },
           {
             tag: "option",
-            "cf-label": "Show me previously matched quotations",
-            value: "previous",
+            "cf-label": "Show me unbought policies",
+            value: "unbought",
           },
           {
             tag: "option",
@@ -181,6 +183,89 @@ class MyForm extends React.Component {
     ]
 
     this.submitCallback = this.submitCallback.bind(this)
+  }
+
+  addBeneficiary = (dto, formData, success, error) => {
+    this.setState({ loading: true })
+    let userType = this.state.userType
+    const {
+      age,
+      beniEmail,
+      beneficiaryID,
+      benifullName,
+      location,
+      occupation,
+      sex,
+      benificiaryRelation,
+    } = formData
+
+    api
+      .post(
+        `/addbeneficiary/${userType}`,
+        JSON.stringify({
+          beneficiaryID:
+            userType === "self" ? this.state.authUser.userId : beneficiaryID,
+          location,
+          userID: this.state.authUser.userId,
+          occupation,
+          benificiaryRelation:
+            userType === "self" ? "self" : benificiaryRelation,
+          gender: sex[0],
+          fullName:
+            userType === "self" ? this.state.authUser.fullName : benifullName,
+          email: userType === "self" ? this.state.authUser.email : beniEmail,
+          age,
+        })
+      )
+      .then((res) => {
+        this.cf.addTags(this.browsePolicy, true, 1) // appending browsePolicy flow
+        console.log("addBeni", res.data)
+      })
+      .catch((err) => {
+        console.log(err)
+        error()
+      })
+      .finally(() => this.setState({ loading: false }))
+  }
+
+  getUnboughtPolicies = (dto, success, error) => {
+    this.setState({ loading: true })
+    api
+      .post(
+        "/getunboughtpolicies",
+        JSON.stringify({
+          userID: this.state.authUser.userId,
+        })
+      )
+      .then((res) => {
+        console.log("policy purchased", res.data)
+        this.unboughtPolicies = [
+          {
+            tag: "select",
+            name: "chooseUnboughtPolicy",
+            "cf-questions": "Choose from unbought policies!",
+            multiple: false,
+            children: res.data.unboughtPolicies.map((policy) => ({
+              tag: "option",
+              "cf-label": `
+                  <div style='padding: 2rem;'>
+                  <div>policyID:${policy.policyID}</div>
+                  <div>policyHolder_id:${policy.policyHolder_id}</div>
+                  <div>buyerId:${policy.buyerId}</div>
+                  </div>
+                  `,
+              value: `${policy.policyName}`,
+            })),
+          },
+        ]
+        this.cf.addTags(this.unboughtPolicies, true, 1)
+        this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
+      })
+      .catch((err) => {
+        console.log(err)
+        error()
+      })
+      .finally(() => this.setState({ loading: false }))
   }
 
   logoutHandler = () => {
@@ -309,6 +394,8 @@ class MyForm extends React.Component {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "decline") {
         this.logoutHandler()
+      } else if (dto.tag.value[0] === "unbought") {
+        this.getUnboughtPolicies(dto, success, error)
       } else {
         this.cf.addTags(this.state.beneficiaryFlow, true, 1)
       }
@@ -364,46 +451,7 @@ class MyForm extends React.Component {
     // adding beneficiary
     if (dto.tag.name === "sex" && dto.tag.value[0] && !this.state.continue) {
       console.log(dto.tag.value)
-      this.setState({ loading: true })
-      let userType = this.state.userType
-      const {
-        age,
-        beniEmail,
-        beneficiaryID,
-        benifullName,
-        location,
-        occupation,
-        sex,
-        benificiaryRelation,
-      } = formData
-
-      api
-        .post(
-          `/addbeneficiary/${userType}`,
-          JSON.stringify({
-            beneficiaryID:
-              userType === "self" ? this.state.authUser.userId : beneficiaryID,
-            location,
-            userID: this.state.authUser.userId,
-            occupation,
-            benificiaryRelation:
-              userType === "self" ? "self" : benificiaryRelation,
-            gender: sex[0],
-            fullName:
-              userType === "self" ? this.state.authUser.fullName : benifullName,
-            email: userType === "self" ? this.state.authUser.email : beniEmail,
-            age,
-          })
-        )
-        .then((res) => {
-          this.cf.addTags(this.browsePolicy, true, 1) // appending browsePolicy flow
-          console.log("addBeni", res.data)
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
+      this.addBeneficiary(dto, formData, success, error)
     }
 
     if (dto.tag.name === "browsePolicy" && dto.tag.value[0]) {
@@ -418,7 +466,7 @@ class MyForm extends React.Component {
             this.policies = [
               {
                 tag: "select",
-                name: "choosePolicyMethod",
+                name: "choosePolicy",
                 "cf-questions": "Choose your preferred policy!",
                 multiple: false,
                 children: res.data.k.map((policy) => ({
@@ -457,28 +505,73 @@ class MyForm extends React.Component {
       }
     }
 
-    if (dto.tag.name === "choosePolicyMethod" && dto.tag.value[0]) {
+    if (dto.tag.name === "choosePolicy" && dto.tag.value[0]) {
       console.log(dto.tag.value[0])
       this.setState({ loading: true })
       api
         .post(
-          "/buypolicy",
+          "/bookpolicy",
           JSON.stringify({
             beneficiaryID: this.state.beneficiaryID,
             policyName: dto.tag.value[0],
           })
         )
         .then((res) => {
-          console.log("policy purchased", res.data)
+          console.log("policy booked", res.data)
+          this.setState({ policyName: dto.tag.value[0] })
           this.cf.addRobotChatResponse(
-            `You've successfully purchased Policy : ${dto.tag.value[0]}`
+            `You've successfully booked Policy : ${dto.tag.value[0]}`
           )
+          this.cf.addTags(res.data.question, true, 1)
         })
         .catch((err) => {
           console.log(err)
           error()
         })
         .finally(() => this.setState({ loading: false }))
+    }
+
+    if (dto.tag.name === "makePayment" && dto.tag.value[0]) {
+      console.log(dto.tag.value[0])
+      console.log(formData.choosePolicy[0])
+      if (dto.tag.value[0] === "yes") {
+        this.setState({ loading: true })
+        api
+          .post(
+            "/buypolicy",
+            JSON.stringify({
+              beneficiaryID: this.state.beneficiaryID,
+              policyName: this.state.policyName,
+            })
+          )
+          .then((res) => {
+            console.log("policy purchased", res.data)
+            this.cf.addRobotChatResponse(
+              `You've successfully purchased Policy : ${this.state.policyName}`
+            )
+            this.cf.addTags(res.data.question, true, 1)
+            this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
+          })
+          .catch((err) => {
+            console.log(err)
+            error()
+          })
+          .finally(() => this.setState({ loading: false }))
+      }
+    }
+
+    if (dto.tag.name === "noUnbought" && dto.tag.value[0]) {
+      console.log(dto.tag.value[0])
+      if (dto.tag.value[0] === "addbeni") {
+        // backtrack
+      }
+    }
+
+    if (dto.tag.name === "unbought" && dto.tag.value[0]) {
+      console.log(dto.tag.value[0])
+      if (dto.tag.value[0] === "yes") {
+        this.getUnboughtPolicies(dto, success, error)
+      }
     }
 
     success()

@@ -12,7 +12,7 @@ const Landing = () => {
       </IonRow>
       <IonRow className='header center'>
         <IonCol>
-          Secure best insurance plan that is right for you and your family
+          Secure the best insurance plan that is right for you and your family
         </IonCol>
       </IonRow>
       <IonRow className='btn-wrapper center'>
