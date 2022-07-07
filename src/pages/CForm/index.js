@@ -300,9 +300,9 @@ class MyForm extends React.Component {
     if (dto.tag.name === "authMethod" && !this.state.auth) {
       if (dto.tag.value[0] === "login") {
         this.setState({ auth: true })
-        this.cf.addTags(this.loginFields, true, 1)
+        this.cf.addTags(this.loginFields, true)
       } else if (dto.tag.value[0] === "signup") {
-        this.cf.addTags(this.signupFields, true, 1)
+        this.cf.addTags(this.signupFields, true)
       }
     }
 
@@ -347,7 +347,7 @@ class MyForm extends React.Component {
         .then((res) => {
           console.log("verify", res.data)
           this.cf.addRobotChatResponse("Your account is verified")
-          this.cf.addTags(this.loginFields, true, 1)
+          this.cf.addTags(this.loginFields, true)
           if (isPlatform("hybrid"))
             Storage.set({ key: "token", value: res.data.data.token })
           else
@@ -373,7 +373,6 @@ class MyForm extends React.Component {
           })
         )
         .then((res) => {
-          this.cf.addTags(this.policyField, true, 1) // appending policyField as soon as we are logged in
           console.log("login", res.data)
           this.setState({
             authUser: res.data.data,
@@ -394,8 +393,9 @@ class MyForm extends React.Component {
     if (dto.tag.name === "loginConfirm") {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "yes") {
-        if (this.props.data.user) {
+        if (this.state.authUser) {
           this.cf.addRobotChatResponse("You are successfully Logged In")
+          this.cf.addTags(this.policyField, true) // appending policyField as soon as we are logged in
         } else {
           error()
         }
@@ -412,7 +412,7 @@ class MyForm extends React.Component {
       } else if (dto.tag.value[0] === "unbought") {
         this.getUnboughtPolicies(dto, success, error)
       } else {
-        this.cf.addTags(this.state.beneficiaryFlow, true, 1)
+        this.cf.addTags(this.state.beneficiaryFlow, true)
       }
     }
 
@@ -422,6 +422,7 @@ class MyForm extends React.Component {
       this.newBeneficiaryForm(dto.tag.value[0], dto, success, error)
     }
 
+    // check if beneficiary already exists
     if (dto.tag.name === "beneficiaryID" && dto.tag.value.length > 0) {
       console.log(dto.tag.value)
       this.setState({ loading: true })
@@ -434,7 +435,9 @@ class MyForm extends React.Component {
           console.log("checkBeni", res.data)
           this.setState({ beneficiaryID: dto.tag.value })
           if (res.data.exist) {
-            this.cf.addTags(res.data.asktoAddnew, true, 1)
+            // this.cf.addTags(res.data.asktoAddnew, true)
+            this.cf.addRobotChatResponse("Benificiary already exists")
+            this.cf.addTags(this.browsePolicy, true)
           }
         })
         .catch((err) => {
@@ -444,17 +447,23 @@ class MyForm extends React.Component {
         .finally(() => this.setState({ loading: false }))
     }
 
+    // if beneficiary already exists
     if (dto.tag.name === "addnewbeni" && dto.tag.value[0]) {
       console.log(dto.tag.value[0])
       if (dto.tag.value[0] === "continue") {
-        this.cf.remapTagsAndStartFrom(14, true, true)
-        this.cf.addTags(this.browsePolicy, true, 1)
-      } else if (dto.tag.value[0] === "add other benificiary") {
-        this.newBeneficiaryForm("others", dto, success, error)
+        // skipping the beneficiary form
+        if (this.state.auth) this.cf.remapTagsAndStartFrom(16, true, true)
+        else this.cf.remapTagsAndStartFrom(20, true, true)
+      } else {
+        this.cf.remapTagsAndStartFrom(16, true, true)
+        this.logoutHandler()
       }
+      // else if (dto.tag.value[0] === "add other benificiary") {
+      //   this.newBeneficiaryForm("others", dto, success, error)
+      // }
     }
 
-    // adding beneficiary
+    // adding beneficiary if beneficiary doesn't exist
     if (dto.tag.name === "sex" && dto.tag.value[0] && !this.state.continue) {
       console.log(dto.tag.value)
       this.addBeneficiary(dto, formData, success, error)
@@ -498,7 +507,7 @@ class MyForm extends React.Component {
                 })),
               },
             ]
-            this.cf.addTags(this.policies, true, 1)
+            this.cf.addTags(this.policies, true)
           })
           .catch((err) => {
             console.log(err)
@@ -528,7 +537,7 @@ class MyForm extends React.Component {
           this.cf.addRobotChatResponse(
             `You've successfully booked Policy : ${dto.tag.value[0]}`
           )
-          this.cf.addTags(res.data.question, true, 1)
+          this.cf.addTags(res.data.question, true)
         })
         .catch((err) => {
           console.log(err)
@@ -551,11 +560,14 @@ class MyForm extends React.Component {
             })
           )
           .then((res) => {
+            this.cf.addTags(res.data.question, true)
+          })
+          .then((res) => {
             console.log("policy purchased", res.data)
             this.cf.addRobotChatResponse(
               `You've successfully purchased Policy : ${this.state.policyName}`
             )
-            this.cf.addTags(res.data.question, true, 1)
+
             this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
           })
           .catch((err) => {
@@ -563,6 +575,8 @@ class MyForm extends React.Component {
             error()
           })
           .finally(() => this.setState({ loading: false }))
+      } else {
+        this.submitCallback()
       }
     }
 
@@ -577,6 +591,8 @@ class MyForm extends React.Component {
       console.log(dto.tag.value[0])
       if (dto.tag.value[0] === "yes") {
         this.getUnboughtPolicies(dto, success, error)
+      } else {
+        this.logoutHandler()
       }
     }
 
@@ -603,13 +619,13 @@ class MyForm extends React.Component {
         submitCallback: this.submitCallback,
         preventAutoFocus: true,
         hideUserInputOnNoneTextInput: true,
-        userInterfaceOptions: {
-          controlElementsInAnimationDelay: 100,
-          robot: {
-            robotResponseTime: 0,
-            chainedResponseTime: 400,
-          },
-        },
+        // userInterfaceOptions: {
+        //   controlElementsInAnimationDelay: 1000,
+        //   robot: {
+        //     robotResponseTime: 1000,
+        //     chainedResponseTime: 1000,
+        //   },
+        // },
         // loadExternalStyleSheet: false
       },
       tags: this.initForm,
