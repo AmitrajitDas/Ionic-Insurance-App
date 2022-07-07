@@ -7,6 +7,7 @@ import api from "../../api"
 import { isPlatform } from "@ionic/react"
 import { Storage } from "@capacitor/storage"
 import Cookies from "js-cookie"
+import Modal from "../../components/Modal"
 
 class MyForm extends React.Component {
   constructor(props) {
@@ -25,6 +26,8 @@ class MyForm extends React.Component {
       continue: false,
       policyName: "",
       unboughtPolicies: [],
+      modalOpen: false,
+      browse: false,
     }
 
     this.initForm = [
@@ -423,9 +426,13 @@ class MyForm extends React.Component {
     }
 
     // check if beneficiary already exists
-    if (dto.tag.name === "beneficiaryID" && dto.tag.value.length > 0) {
+    if (
+      this.state.userType === "others" &&
+      dto.tag.name === "beneficiaryID" &&
+      dto.tag.value.length > 0
+    ) {
       console.log(dto.tag.value)
-      this.setState({ loading: true })
+      this.setState({ loading: true, beneficiaryID: dto.tag.value })
       api
         .post(
           "/findbeneficiary",
@@ -434,6 +441,30 @@ class MyForm extends React.Component {
         .then((res) => {
           console.log("checkBeni", res.data)
           this.setState({ beneficiaryID: dto.tag.value })
+          if (res.data.exist) {
+            // this.cf.addTags(res.data.asktoAddnew, true)
+            this.cf.addRobotChatResponse("Benificiary already exists")
+            this.cf.addTags(this.browsePolicy, true)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          error()
+        })
+        .finally(() => this.setState({ loading: false }))
+    } else if (this.state.userType === "self") {
+      this.setState({
+        loading: true,
+        beneficiaryID: this.state.authUser.userId,
+      })
+      api
+        .post(
+          "/findbeneficiary",
+          JSON.stringify({ beneficiaryID: this.state.authUser.userId })
+        )
+        .then((res) => {
+          console.log("checkBeni", res.data)
+          this.setState({ beneficiaryID: this.state.authUser.userId })
           if (res.data.exist) {
             // this.cf.addTags(res.data.asktoAddnew, true)
             this.cf.addRobotChatResponse("Benificiary already exists")
@@ -472,113 +503,72 @@ class MyForm extends React.Component {
     if (dto.tag.name === "browsePolicy" && dto.tag.value[0]) {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "yes") {
-        // if user wants to browse through policies
-        this.setState({ loading: true })
-        api
-          .get(`/getpoliciesforme/${this.state.beneficiaryID}`)
-          .then((res) => {
-            console.log("getPolicies", res.data)
-            this.policies = [
-              {
-                tag: "select",
-                name: "choosePolicy",
-                "cf-questions": "Choose your preferred policy!",
-                multiple: false,
-                children: res.data.k.map((policy) => ({
-                  tag: "option",
-                  "cf-label": `
-                  <div style='padding: 2rem;'>
-                  <div>policyID:${policy.policyID}</div>
-                  <div>policyName:${policy.policyName}</div>
-                  <div>basePrice:${policy.basePrice}</div>
-                  <div>location:${policy.location}</div>
-                  <div>occupation:${policy.occupation}</div>
-                  <div>minAge:${policy.minAge}</div>
-                  <div>maxAge:${policy.maxAge}</div>
-                  <div>period:${policy.period}</div>
-                  <div>gender:${policy.gender}</div>
-                  <div>companyDiscount:${policy.companyDiscount}</div>
-                  <div>govDiscount:${policy.govDiscount}</div>
-                  <div>otherTax:${policy.otherTax}</div>
-                  <div>gst:${policy.gst}</div>
-                  </div>
-                  `,
-                  value: `${policy.policyName}`,
-                })),
-              },
-            ]
-            this.cf.addTags(this.policies, true)
-          })
-          .catch((err) => {
-            console.log(err)
-            error()
-          })
-          .finally(() => this.setState({ loading: false }))
+        this.setState({ modalOpen: true, browse: true })
       } else {
         // else logout
         this.logoutHandler()
       }
     }
 
-    if (dto.tag.name === "choosePolicy" && dto.tag.value[0]) {
-      console.log(dto.tag.value[0])
-      this.setState({ loading: true })
-      api
-        .post(
-          "/bookpolicy",
-          JSON.stringify({
-            beneficiaryID: this.state.beneficiaryID,
-            policyName: dto.tag.value[0],
-          })
-        )
-        .then((res) => {
-          console.log("policy booked", res.data)
-          this.setState({ policyName: dto.tag.value[0] })
-          this.cf.addRobotChatResponse(
-            `You've successfully booked Policy : ${dto.tag.value[0]}`
-          )
-          this.cf.addTags(res.data.question, true)
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
-    }
+    // if (dto.tag.name === "choosePolicy" && dto.tag.value[0]) {
+    //   console.log(dto.tag.value[0])
+    //   this.setState({ loading: true })
+    //   api
+    //     .post(
+    //       "/bookpolicy",
+    //       JSON.stringify({
+    //         beneficiaryID: this.state.beneficiaryID,
+    //         policyName: dto.tag.value[0],
+    //       })
+    //     )
+    //     .then((res) => {
+    //       console.log("policy booked", res.data)
+    //       this.setState({ policyName: dto.tag.value[0] })
+    //       this.cf.addRobotChatResponse(
+    //         `You've successfully booked Policy : ${dto.tag.value[0]}`
+    //       )
+    //       this.cf.addTags(res.data.question, true)
+    //     })
+    //     .catch((err) => {
+    //       console.log(err)
+    //       error()
+    //     })
+    //     .finally(() => this.setState({ loading: false }))
+    // }
 
-    if (dto.tag.name === "makePayment" && dto.tag.value[0]) {
-      console.log(dto.tag.value[0])
-      console.log(formData.choosePolicy[0])
-      if (dto.tag.value[0] === "yes") {
-        this.setState({ loading: true })
-        api
-          .post(
-            "/buypolicy",
-            JSON.stringify({
-              beneficiaryID: this.state.beneficiaryID,
-              policyName: this.state.policyName,
-            })
-          )
-          .then((res) => {
-            this.cf.addTags(res.data.question, true)
-          })
-          .then((res) => {
-            console.log("policy purchased", res.data)
-            this.cf.addRobotChatResponse(
-              `You've successfully purchased Policy : ${this.state.policyName}`
-            )
+    // if (dto.tag.name === "makePayment" && dto.tag.value[0]) {
+    //   console.log(dto.tag.value[0])
+    //   console.log(formData.choosePolicy[0])
+    //   if (dto.tag.value[0] === "yes") {
+    //     this.setState({ loading: true })
+    //     api
+    //       .post(
+    //         "/buypolicy",
+    //         JSON.stringify({
+    //           beneficiaryID: this.state.beneficiaryID,
+    //           policyName: this.state.policyName,
+    //         })
+    //       )
+    //       .then((res) => {
+    //         this.cf.addTags(res.data.question, true)
+    //       })
+    //       .then((res) => {
+    //         console.log("policy purchased", res.data)
+    //         this.cf.addRobotChatResponse(
+    //           `You've successfully purchased Policy : ${this.state.policyName}`
+    //         )
 
-            this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
-          })
-          .catch((err) => {
-            console.log(err)
-            error()
-          })
-          .finally(() => this.setState({ loading: false }))
-      } else {
-        this.submitCallback()
-      }
-    }
+    //         this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
+    //       })
+    //       .catch((err) => {
+    //         console.log(err)
+    //         error()
+    //       })
+    //       .finally(() => this.setState({ loading: false }))
+    //   } else {
+    //     this.submitCallback()
+    //   }
+    // }
 
     if (dto.tag.name === "noUnbought" && dto.tag.value[0]) {
       console.log(dto.tag.value[0])
@@ -610,6 +600,7 @@ class MyForm extends React.Component {
     //   var loggedIn = data ? true : false
     // }
     // var user = JSON.parse(sessionStorage.getItem("user"))
+
     this.cf = ConversationalForm.startTheConversation({
       options: {
         theme: "purple",
@@ -645,6 +636,13 @@ class MyForm extends React.Component {
     return (
       <div>
         <div ref={(ref) => (this.elem = ref)} />
+        {this.state.modalOpen && (
+          <Modal
+            modalOpen={this.state.modalOpen}
+            browse={this.state.browse}
+            beneficiaryID={this.state.beneficiaryID}
+          />
+        )}
       </div>
     )
   }
