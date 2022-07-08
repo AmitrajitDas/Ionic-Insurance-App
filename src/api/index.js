@@ -2,7 +2,7 @@ import axios from "axios"
 
 axios.defaults.withCredentials = true
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API}`,
+  baseURL: `${process.env.REACT_APP_DEV_API}`,
   // withCrendentials: true,
   headers: {
     Accept: "application/json",
