@@ -13,7 +13,7 @@ import Loader from "../Loader/index"
 import InsuranceIMG from "../../assets/insurance.jpg"
 import { cardOutline } from "ionicons/icons"
 
-const Breakups = ({ bookedPolicy, beneficiaryID }) => {
+const Breakups = ({ bookedPolicy, beneficiaryID, userID }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [purchased, setPurchased] = useState(false)
@@ -34,6 +34,7 @@ const Breakups = ({ bookedPolicy, beneficiaryID }) => {
         "/buypolicy",
         JSON.stringify({
           beneficiaryID,
+          userID,
           policyName: bookedPolicy.policyName,
         })
       )
