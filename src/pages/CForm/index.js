@@ -27,7 +27,8 @@ class MyForm extends React.Component {
       policyName: "",
       unboughtPolicies: [],
       modalOpen: false,
-      browse: false,
+      browsePolicies: false,
+      browseUnboughtPolicies: false,
     }
 
     this.initForm = [
@@ -413,7 +414,8 @@ class MyForm extends React.Component {
       if (dto.tag.value[0] === "decline") {
         this.logoutHandler()
       } else if (dto.tag.value[0] === "unbought") {
-        this.getUnboughtPolicies(dto, success, error)
+        // this.getUnboughtPolicies(dto, success, error)
+        this.setState({ modalOpen: true, browseUnboughtPolicies: true })
       } else {
         this.cf.addTags(this.state.beneficiaryFlow, true)
       }
@@ -486,8 +488,9 @@ class MyForm extends React.Component {
         if (this.state.auth) this.cf.remapTagsAndStartFrom(16, true, true)
         else this.cf.remapTagsAndStartFrom(20, true, true)
       } else {
-        this.cf.remapTagsAndStartFrom(16, true, true)
-        this.logoutHandler()
+        // this.cf.remapTagsAndStartFrom(16, true, true)
+        // this.logoutHandler()
+        this.newBeneficiaryForm("others", dto, success, error)
       }
       // else if (dto.tag.value[0] === "add other benificiary") {
       //   this.newBeneficiaryForm("others", dto, success, error)
@@ -503,7 +506,7 @@ class MyForm extends React.Component {
     if (dto.tag.name === "browsePolicy" && dto.tag.value[0]) {
       console.log(dto.tag.value)
       if (dto.tag.value[0] === "yes") {
-        this.setState({ modalOpen: true, browse: true })
+        this.setState({ modalOpen: true, browsePolicies: true })
       } else {
         // else logout
         this.logoutHandler()
@@ -570,21 +573,21 @@ class MyForm extends React.Component {
     //   }
     // }
 
-    if (dto.tag.name === "noUnbought" && dto.tag.value[0]) {
-      console.log(dto.tag.value[0])
-      if (dto.tag.value[0] === "addbeni") {
-        // backtrack
-      }
-    }
+    // if (dto.tag.name === "noUnbought" && dto.tag.value[0]) {
+    //   console.log(dto.tag.value[0])
+    //   if (dto.tag.value[0] === "addbeni") {
+    //     // backtrack
+    //   }
+    // }
 
-    if (dto.tag.name === "unbought" && dto.tag.value[0]) {
-      console.log(dto.tag.value[0])
-      if (dto.tag.value[0] === "yes") {
-        this.getUnboughtPolicies(dto, success, error)
-      } else {
-        this.logoutHandler()
-      }
-    }
+    // if (dto.tag.name === "unbought" && dto.tag.value[0]) {
+    //   console.log(dto.tag.value[0])
+    //   if (dto.tag.value[0] === "yes") {
+    //     this.getUnboughtPolicies(dto, success, error)
+    //   } else {
+    //     this.logoutHandler()
+    //   }
+    // }
 
     success()
   }
@@ -639,8 +642,10 @@ class MyForm extends React.Component {
         {this.state.modalOpen && (
           <Modal
             modalOpen={this.state.modalOpen}
-            browse={this.state.browse}
+            browsePolicies={this.state.browsePolicies}
+            browseUnboughtPolicies={this.state.browseUnboughtPolicies}
             beneficiaryID={this.state.beneficiaryID}
+            userID={this.state.authUser.userId}
           />
         )}
       </div>
