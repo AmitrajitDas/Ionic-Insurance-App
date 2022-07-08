@@ -64,7 +64,7 @@ const Card = ({ policy, beneficiaryID, setIsBooked, setBookedPolicy }) => {
             }}
           >
             <div>{policy.policyName}</div>
-            <div>{policy.basePrice}</div>
+            <div>₹{policy.basePrice}</div>
           </IonCardTitle>
         </IonCardHeader>
 
@@ -72,7 +72,7 @@ const Card = ({ policy, beneficiaryID, setIsBooked, setBookedPolicy }) => {
           <div>
             Availble for {policy.gender} {policy.occupation}
           </div>
-          <div>Valid for {policy.period}</div>
+          <div>Valid for {policy.period} days</div>
 
           <IonButton
             slot='start'
