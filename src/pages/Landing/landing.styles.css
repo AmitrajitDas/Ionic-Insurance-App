@@ -1,0 +1,36 @@
+.landing-root {
+  margin-top: 3rem;
+  padding: 2rem;
+}
+.svg-wrapper {
+  margin-top: 2rem;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header {
+  margin-top: 4rem;
+  font-family: "Merriweather Sans";
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 40px;
+  color: #202666;
+}
+
+.btn-wrapper {
+  margin-top: 5rem;
+}
+
+.btn {
+  --padding-start: 3rem;
+  --padding-end: 3rem;
+  --padding-top: 1.5rem;
+  --padding-bottom: 1.5rem;
+  font-family: "Fira Sans", sans-serif;
+  font-size: 20px;
+  text-transform: none;
+}
