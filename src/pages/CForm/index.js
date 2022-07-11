@@ -52,24 +52,24 @@ class MyForm extends React.Component {
           },
         ],
       },
-      {
-        tag: "select",
-        name: "exitConfirm",
-        "cf-questions": "Are you done with the process?",
-        multiple: false,
-        children: [
-          {
-            tag: "option",
-            "cf-label": "Yes",
-            value: "yes",
-          },
-          {
-            tag: "option",
-            "cf-label": "No",
-            value: "no",
-          },
-        ],
-      },
+      // {
+      //   tag: "select",
+      //   name: "exitConfirm",
+      //   "cf-questions": "Are you done with the process?",
+      //   multiple: false,
+      //   children: [
+      //     {
+      //       tag: "option",
+      //       "cf-label": "Yes",
+      //       value: "yes",
+      //     },
+      //     {
+      //       tag: "option",
+      //       "cf-label": "No",
+      //       value: "no",
+      //     },
+      //   ],
+      // },
     ]
 
     this.signupFields = [
@@ -94,13 +94,6 @@ class MyForm extends React.Component {
         "cf-questions": "Enter a password!",
         "cf-input-placeholder": "Password",
       },
-      {
-        tag: "input",
-        type: "text",
-        name: "otp",
-        "cf-questions": "Verify your account with the OTP sent to your email!",
-        "cf-input-placeholder": "Verify OTP",
-      },
     ]
 
     this.loginFields = [
@@ -118,24 +111,24 @@ class MyForm extends React.Component {
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
-      {
-        tag: "select",
-        name: "loginConfirm",
-        "cf-questions": "Are you sure you've entered right credentials?",
-        multiple: false,
-        children: [
-          {
-            tag: "option",
-            "cf-label": "Yes",
-            value: "yes",
-          },
-          {
-            tag: "option",
-            "cf-label": "No",
-            value: "no",
-          },
-        ],
-      },
+      // {
+      //   tag: "select",
+      //   name: "loginConfirm",
+      //   "cf-questions": "Are you sure you've entered right credentials?",
+      //   multiple: false,
+      //   children: [
+      //     {
+      //       tag: "option",
+      //       "cf-label": "Yes",
+      //       value: "yes",
+      //     },
+      //     {
+      //       tag: "option",
+      //       "cf-label": "No",
+      //       value: "no",
+      //     },
+      //   ],
+      // },
     ]
 
     this.policyField = [
@@ -194,7 +187,7 @@ class MyForm extends React.Component {
     api
       .get(`/getdetails/${userType}`)
       .then((res) => {
-        this.cf.addTags(res.data.addBeneficiary, true, 1)
+        this.cf.addTags(res.data.addBeneficiary, true)
         console.log("getDetailForm", res.data)
       })
       .catch((err) => {
@@ -296,6 +289,8 @@ class MyForm extends React.Component {
     }, 1000)
   }
 
+  pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
   flowCallback = (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
@@ -328,10 +323,35 @@ class MyForm extends React.Component {
         .then((res) => {
           console.log("signup", res.data)
           this.setState({ email: emailSignup })
+          return res
+        })
+        .then((res) => {
+          if (res.data?.data?.done === "yes") {
+            console.log("otp block")
+            this.cf.addTags(
+              [
+                {
+                  tag: "input",
+                  type: "text",
+                  name: "otp",
+                  "cf-questions":
+                    "Verify your account with the OTP sent to your email!",
+                  "cf-input-placeholder": "Verify OTP",
+                },
+              ],
+              true
+            )
+          } else {
+            console.log("yes block")
+            this.cf.addRobotChatResponse(res.data)
+            this.cf.addRobotChatResponse("Login instead")
+            this.cf.addTags(this.loginFields, true)
+          }
         })
         .catch((err) => {
           console.log(err)
-          error()
+          this.cf.addRobotChatResponse(err.message)
+          return error()
         })
         .finally(() => this.setState({ loading: false }))
     }
@@ -350,16 +370,19 @@ class MyForm extends React.Component {
         )
         .then((res) => {
           console.log("verify", res.data)
-          this.cf.addRobotChatResponse("Your account is verified")
-          this.cf.addTags(this.loginFields, true)
           if (isPlatform("hybrid"))
             Storage.set({ key: "token", value: res.data.data.token })
           else
             localStorage.setItem("token", JSON.stringify(res.data.data.token))
+          return res
+        })
+        .then((res) => {
+          this.cf.addRobotChatResponse(res.data.msg)
+          this.cf.addTags(this.loginFields, true)
         })
         .catch((err) => {
           console.log(err)
-          error()
+          return error()
         })
         .finally(() => this.setState({ loading: false }))
     }
@@ -385,28 +408,33 @@ class MyForm extends React.Component {
           if (isPlatform("hybrid"))
             Storage.set({ key: "user", value: res.data })
           else sessionStorage.setItem("user", JSON.stringify(res.data))
+          return res.data
+        })
+        .then((data) => {
+          this.cf.addRobotChatResponse("You are successfully Logged In")
+          this.cf.addTags(this.policyField, true) // appending policyField as soon as we are logged in
         })
         .catch((err) => {
           console.log(err)
-          error()
+          return error()
         })
         .finally(() => this.setState({ loading: false }))
     }
 
     // intermediate for login api call
-    if (dto.tag.name === "loginConfirm") {
-      console.log(dto.tag.value)
-      if (dto.tag.value[0] === "yes") {
-        if (this.state.authUser) {
-          this.cf.addRobotChatResponse("You are successfully Logged In")
-          this.cf.addTags(this.policyField, true) // appending policyField as soon as we are logged in
-        } else {
-          error()
-        }
-      } else {
-        window.location.reload(false)
-      }
-    }
+    // if (dto.tag.name === "loginConfirm") {
+    //   console.log(dto.tag.value)
+    //   if (dto.tag.value[0] === "yes") {
+    //     if (this.state.authUser) {
+    //       this.cf.addRobotChatResponse("You are successfully Logged In")
+    //       this.cf.addTags(this.policyField, true) // appending policyField as soon as we are logged in
+    //     } else {
+    //       error()
+    //     }
+    //   } else {
+    //     window.location.reload(false)
+    //   }
+    // }
 
     /// to handle if the user might come back later
     if (dto.tag.name === "flowMethod" && dto.tag.value[0]) {
@@ -589,7 +617,7 @@ class MyForm extends React.Component {
     //   }
     // }
 
-    success()
+    setTimeout(() => success(), 1000)
   }
 
   componentDidMount() {
