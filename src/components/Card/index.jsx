@@ -20,10 +20,10 @@ const Card = ({
   unboughtPolicy,
   beneficiaryID,
   userID,
-  isBooked,
+  isSelected,
   isUnbought,
-  setIsBooked,
-  setBookedPolicy,
+  setIsSelected,
+  setSelectedPolicy,
   setIsUnbought,
 }) => {
   const [loading, setLoading] = useState(false)
@@ -31,28 +31,34 @@ const Card = ({
 
   const bookingHandler = (e) => {
     e.preventDefault()
-    if (!isBooked) {
-      setLoading(true)
-      api
-        .post(
-          "/bookpolicy",
-          JSON.stringify({
-            beneficiaryID,
-            userID,
-            policyName: policy.policyName,
-          })
-        )
-        .then((res) => {
-          console.log("policy booked", res.data)
-          setIsBooked(true)
-          setBookedPolicy(policy)
-        })
-        .catch((err) => {
-          setError(true)
-          console.log(err)
-        })
-        .finally(() => setLoading(false))
+    if (!isSelected) {
+      setIsSelected(true)
+      setIsUnbought(false)
+      setSelectedPolicy(policy)
     }
+
+    // if (!isBooked) {
+    //   setLoading(true)
+    //   api
+    //     .post(
+    //       "/bookpolicy",
+    //       JSON.stringify({
+    //         beneficiaryID,
+    //         userID,
+    //         policyName: policy.policyName,
+    //       })
+    //     )
+    //     .then((res) => {
+    //       console.log("policy booked", res.data)
+    //       setIsBooked(true)
+    //       setBookedPolicy(policy)
+    //     })
+    //     .catch((err) => {
+    //       setError(true)
+    //       console.log(err)
+    //     })
+    //     .finally(() => setLoading(false))
+    // }
 
     // return () => {
     //     setIsBooked(true) // cleanup
@@ -62,7 +68,7 @@ const Card = ({
   const unboughtHandler = (e) => {
     e.preventDefault()
     setIsUnbought(false)
-    setBookedPolicy(unboughtPolicy)
+    setSelectedPolicy(unboughtPolicy)
   }
 
   return (
@@ -107,7 +113,7 @@ const Card = ({
             className='card-btn'
             onClick={isUnbought ? unboughtHandler : bookingHandler}
           >
-            {isUnbought ? "Buy Unbought Premium" : "Book Premium"}
+            Pay Premium
           </IonButton>
         </IonCardContent>
       </IonCard>
