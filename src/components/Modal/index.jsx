@@ -28,6 +28,7 @@ const Modal = ({
   const [error, setError] = useState(false)
   const [isSelected, setIsSelected] = useState(!browsePolicies)
   const [isUnbought, setIsUnbought] = useState(browseUnboughtPolicies)
+  const [savedPolicy, setSavedPolicy] = useState(false)
   const [selectedPolicy, setSelectedPolicy] = useState({})
 
   useEffect(() => {
@@ -65,8 +66,8 @@ const Modal = ({
     // if(!isSelected) {
     //   setIsOpen(false)
     // }
-    if (isSelected && !isUnbought) setIsSelected(false)
-    if (!isSelected && isUnbought) setIsUnbought(true)
+    if (isSelected && !isUnbought && !savedPolicy) setIsSelected(false)
+    if (!isUnbought && savedPolicy) setIsUnbought(true)
   }
 
   return (
@@ -102,24 +103,28 @@ const Modal = ({
           unboughtPolicies.map((unboughtPolicy, i) => (
             <Card
               key={i}
-              unboughtPolicy={unboughtPolicy}
+              unboughtPolicy={unboughtPolicy} //
               beneficiaryID={beneficiaryID}
               userID={userID}
               isUnbought={isUnbought}
               setSelectedPolicy={setSelectedPolicy}
               setIsUnbought={setIsUnbought}
+              setSavedPolicy={setSavedPolicy}
             />
           ))
         ) : (
           <Breakups
             selectedPolicy={selectedPolicy}
-            beneficiaryID={beneficiaryID}
+            beneficiaryID={
+              savedPolicy ? selectedPolicy?.policyHolder_id : beneficiaryID
+            }
             userID={userID}
             isSelected={isSelected}
             setIsSelected={setIsSelected}
             isUnbought={isUnbought}
             setIsUnbought={setIsUnbought}
             setIsOpen={setIsOpen}
+            savedPolicy={savedPolicy}
           />
         )}
       </IonContent>

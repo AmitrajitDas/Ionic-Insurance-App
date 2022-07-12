@@ -25,6 +25,7 @@ const Card = ({
   setIsSelected,
   setSelectedPolicy,
   setIsUnbought,
+  setSavedPolicy,
 }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -36,39 +37,14 @@ const Card = ({
       setIsUnbought(false)
       setSelectedPolicy(policy)
     }
-
-    // if (!isBooked) {
-    //   setLoading(true)
-    //   api
-    //     .post(
-    //       "/bookpolicy",
-    //       JSON.stringify({
-    //         beneficiaryID,
-    //         userID,
-    //         policyName: policy.policyName,
-    //       })
-    //     )
-    //     .then((res) => {
-    //       console.log("policy booked", res.data)
-    //       setIsBooked(true)
-    //       setBookedPolicy(policy)
-    //     })
-    //     .catch((err) => {
-    //       setError(true)
-    //       console.log(err)
-    //     })
-    //     .finally(() => setLoading(false))
-    // }
-
-    // return () => {
-    //     setIsBooked(true) // cleanup
-    // }
   }
 
   const unboughtHandler = (e) => {
     e.preventDefault()
     setIsUnbought(false)
     setSelectedPolicy(unboughtPolicy)
+    console.log(unboughtPolicy)
+    setSavedPolicy(true)
   }
 
   return (
