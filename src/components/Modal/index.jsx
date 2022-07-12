@@ -5,6 +5,8 @@ import {
   IonContent,
   IonToolbar,
   IonTitle,
+  IonButtons,
+  IonButton,
 } from "@ionic/react"
 import Card from "../Card"
 import Breakups from "../Breakups"
@@ -24,9 +26,9 @@ const Modal = ({
   const [unboughtPolicies, setUnboughtPolicies] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
-  const [isBooked, setIsBooked] = useState(!browsePolicies)
+  const [isSelected, setIsSelected] = useState(!browsePolicies)
   const [isUnbought, setIsUnbought] = useState(browseUnboughtPolicies)
-  const [bookedPolicy, setBookedPolicy] = useState({})
+  const [selectedPolicy, setSelectedPolicy] = useState({})
 
   useEffect(() => {
     setLoading(true)
@@ -34,6 +36,7 @@ const Modal = ({
       api
         .get(`/getpoliciesforme/${beneficiaryID}`)
         .then((res) => {
+          console.log("matched policies", res.data)
           setPolicies(res.data.policies)
         })
         .catch((err) => {
@@ -57,26 +60,42 @@ const Modal = ({
     }
   }, [beneficiaryID, browsePolicies, browseUnboughtPolicies, userID])
 
+  const backHandler = (e) => {
+    e.preventDefault()
+    // if(!isSelected) {
+    //   setIsOpen(false)
+    // }
+    if (isSelected && !isUnbought) setIsSelected(false)
+    if (!isSelected && isUnbought) setIsUnbought(true)
+  }
+
   return (
     <IonModal isOpen={isOpen}>
       <IonHeader>
         <IonToolbar color='tertiary'>
-          <IonTitle>Browse and Purchase your suitable policies</IonTitle>
+          {((isSelected && !isUnbought) || (!isSelected && isUnbought)) && (
+            <IonButtons slot='start'>
+              <IonButton onClick={backHandler}>Back</IonButton>
+            </IonButtons>
+          )}
+
+          <IonTitle>Browse and Purchase</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className='ion-padding'>
         {loading && <Loader loading={loading} />}
         {error && <Alert error={error} />}
-        {!isBooked ? (
+        {!isSelected ? (
           policies.map((policy, i) => (
             <Card
               key={i}
               policy={policy}
               beneficiaryID={beneficiaryID}
               userID={userID}
-              isBooked={isBooked}
-              setIsBooked={setIsBooked}
-              setBookedPolicy={setBookedPolicy}
+              isSelected={isSelected}
+              setIsSelected={setIsSelected}
+              setSelectedPolicy={setSelectedPolicy}
+              setIsUnbought={setIsUnbought}
             />
           ))
         ) : isUnbought ? (
@@ -87,15 +106,20 @@ const Modal = ({
               beneficiaryID={beneficiaryID}
               userID={userID}
               isUnbought={isUnbought}
-              setBookedPolicy={setBookedPolicy}
+              setSelectedPolicy={setSelectedPolicy}
               setIsUnbought={setIsUnbought}
             />
           ))
         ) : (
           <Breakups
-            bookedPolicy={bookedPolicy}
-            beneficiaryID={bookedPolicy.policyHolder_id}
+            selectedPolicy={selectedPolicy}
+            beneficiaryID={beneficiaryID}
             userID={userID}
+            isSelected={isSelected}
+            setIsSelected={setIsSelected}
+            isUnbought={isUnbought}
+            setIsUnbought={setIsUnbought}
+            setIsOpen={setIsOpen}
           />
         )}
       </IonContent>
