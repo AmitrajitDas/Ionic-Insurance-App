@@ -92,7 +92,7 @@ class MyForm extends React.Component {
       {
         tag: "select",
         name: "flowMethod",
-        "cf-questions": "Do you want to add Beneficiaries?",
+        "cf-questions": "Do you want to buy policies for your family?",
         multiple: false,
         children: [
           {
@@ -118,7 +118,7 @@ class MyForm extends React.Component {
       {
         tag: "select",
         name: "flowMethod",
-        "cf-questions": "Do you want to add Beneficiaries?",
+        "cf-questions": "Do you want to buy policies for your family?",
         multiple: false,
         children: [
           {
@@ -161,7 +161,7 @@ class MyForm extends React.Component {
   }
 
   newBeneficiaryForm = async (userType, relation, dto, success, error) => {
-    this.setState({ loading: true, userType })
+    this.setState({ userType })
     try {
       const { data } = await api.get(`/getdetails/${userType}/${relation}`)
       console.log("getDetailForm", data)
@@ -196,8 +196,7 @@ class MyForm extends React.Component {
           benificiaryRelation:
             userType === "self" ? "self" : benificiaryRelation[0],
           gender: sex[0],
-          fullName:
-            userType === "self" ? this.state.authUser.fullName : benifullName,
+          fullName: benifullName,
           age,
         })
       )
