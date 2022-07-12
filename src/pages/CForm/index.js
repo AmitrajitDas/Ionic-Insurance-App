@@ -52,34 +52,9 @@ class MyForm extends React.Component {
           },
         ],
       },
-      {
-        tag: "select",
-        name: "exitConfirm",
-        "cf-questions": "Are you done with the process?",
-        multiple: false,
-        children: [
-          {
-            tag: "option",
-            "cf-label": "Yes",
-            value: "yes",
-          },
-          {
-            tag: "option",
-            "cf-label": "No",
-            value: "no",
-          },
-        ],
-      },
     ]
 
     this.signupFields = [
-      {
-        tag: "input",
-        type: "text",
-        name: "fullName",
-        "cf-questions": "What is your name?",
-        "cf-input-placeholder": "Fullname",
-      },
       {
         tag: "input",
         type: "email",
@@ -93,13 +68,6 @@ class MyForm extends React.Component {
         name: "passwordSignup",
         "cf-questions": "Enter a password!",
         "cf-input-placeholder": "Password",
-      },
-      {
-        tag: "input",
-        type: "text",
-        name: "otp",
-        "cf-questions": "Verify your account with the OTP sent to your email!",
-        "cf-input-placeholder": "Verify OTP",
       },
     ]
 
@@ -118,36 +86,18 @@ class MyForm extends React.Component {
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
       },
-      {
-        tag: "select",
-        name: "loginConfirm",
-        "cf-questions": "Are you sure you've entered right credentials?",
-        multiple: false,
-        children: [
-          {
-            tag: "option",
-            "cf-label": "Yes",
-            value: "yes",
-          },
-          {
-            tag: "option",
-            "cf-label": "No",
-            value: "no",
-          },
-        ],
-      },
     ]
 
     this.policyField = [
       {
         tag: "select",
         name: "flowMethod",
-        "cf-questions": "Do you want to buy quotations now?",
+        "cf-questions": "Do you want to buy policies for your family?",
         multiple: false,
         children: [
           {
             tag: "option",
-            "cf-label": "Proceed further, I want to choose quotations",
+            "cf-label": "Proceed further",
             value: "proceed",
           },
           {
@@ -164,12 +114,33 @@ class MyForm extends React.Component {
       },
     ]
 
+    this.policyField2 = [
+      {
+        tag: "select",
+        name: "flowMethod",
+        "cf-questions": "Do you want to buy policies for your family?",
+        multiple: false,
+        children: [
+          {
+            tag: "option",
+            "cf-label": "Proceed further",
+            value: "proceed",
+          },
+          {
+            tag: "option",
+            "cf-label": "No, I'll come back later",
+            value: "decline",
+          },
+        ],
+      },
+    ]
+
     this.browsePolicy = [
       {
         tag: "select",
         name: "browsePolicy",
         "cf-questions":
-          "Do you want to browse policies that are suited for you?",
+          "Do you want to browse the quotations that are suited for you?",
         multiple: false,
         children: [
           {
@@ -189,27 +160,22 @@ class MyForm extends React.Component {
     this.submitCallback = this.submitCallback.bind(this)
   }
 
-  newBeneficiaryForm = (userType, dto, success, error) => {
-    this.setState({ loading: true, userType: dto.tag.value[0] })
-    api
-      .get(`/getdetails/${userType}`)
-      .then((res) => {
-        this.cf.addTags(res.data.addBeneficiary, true, 1)
-        console.log("getDetailForm", res.data)
-      })
-      .catch((err) => {
-        console.log(err)
-        error()
-      })
-      .finally(() => this.setState({ loading: false }))
+  newBeneficiaryForm = async (userType, relation, dto, success, error) => {
+    this.setState({ userType })
+    try {
+      const { data } = await api.get(`/getdetails/${userType}/${relation}`)
+      console.log("getDetailForm", data)
+      await this.cf.addTags(data.addBeneficiary, true)
+    } catch (err) {
+      console.log(err)
+      error()
+    }
   }
 
-  addBeneficiary = (dto, formData, success, error) => {
-    this.setState({ loading: true })
+  addBeneficiary = async (dto, formData, success, error) => {
     let userType = this.state.userType
     const {
       age,
-      beniEmail,
       beneficiaryID,
       benifullName,
       location,
@@ -218,73 +184,40 @@ class MyForm extends React.Component {
       benificiaryRelation,
     } = formData
 
-    api
-      .post(
+    try {
+      const { data } = await api.post(
         `/addbeneficiary/${userType}`,
         JSON.stringify({
           beneficiaryID:
             userType === "self" ? this.state.authUser.userId : beneficiaryID,
-          location,
+          location: location[0],
           userID: this.state.authUser.userId,
-          occupation,
+          occupation: occupation[0],
           benificiaryRelation:
-            userType === "self" ? "self" : benificiaryRelation,
+            userType === "self" ? "self" : benificiaryRelation[0],
           gender: sex[0],
-          fullName:
-            userType === "self" ? this.state.authUser.fullName : benifullName,
-          email: userType === "self" ? this.state.authUser.email : beniEmail,
+          fullName: benifullName,
           age,
         })
       )
-      .then((res) => {
-        this.cf.addTags(this.browsePolicy, true, 1) // appending browsePolicy flow
-        console.log("addBeni", res.data)
-      })
-      .catch((err) => {
-        console.log(err)
-        error()
-      })
-      .finally(() => this.setState({ loading: false }))
+
+      console.log("addBeni", data)
+      await this.cf.addTags(this.browsePolicy, true) // appending browsePolicy flow
+    } catch (err) {
+      console.log(err)
+      return error()
+    }
   }
 
-  getUnboughtPolicies = (dto, success, error) => {
-    this.setState({ loading: true })
-    api
-      .post(
-        "/getunboughtpolicies",
-        JSON.stringify({
-          userID: this.state.authUser.userId,
-        })
-      )
-      .then((res) => {
-        console.log("policy purchased", res.data)
-        this.unboughtPolicies = [
-          {
-            tag: "select",
-            name: "chooseUnboughtPolicy",
-            "cf-questions": "Choose from unbought policies!",
-            multiple: false,
-            children: res.data.unboughtPolicies.map((policy) => ({
-              tag: "option",
-              "cf-label": `
-                  <div style='padding: 2rem;'>
-                  <div>policyID:${policy.policyID}</div>
-                  <div>policyHolder_id:${policy.policyHolder_id}</div>
-                  <div>buyerId:${policy.buyerId}</div>
-                  </div>
-                  `,
-              value: `${policy.policyName}`,
-            })),
-          },
-        ]
-        this.cf.addTags(this.unboughtPolicies, true, 1)
-        this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
-      })
-      .catch((err) => {
-        console.log(err)
-        error()
-      })
-      .finally(() => this.setState({ loading: false }))
+  checkUnboughtPolicies = async (dto, success, error) => {
+    try {
+      const { data } = await api.post("/getunboughtpolicies")
+      console.log("unbought policies", data)
+      this.setState({ unboughtPolicies: data.unboughtPolicies })
+    } catch (err) {
+      console.log(err)
+      return error()
+    }
   }
 
   logoutHandler = () => {
@@ -296,7 +229,9 @@ class MyForm extends React.Component {
     }, 1000)
   }
 
-  flowCallback = (dto, success, error) => {
+  pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  flowCallback = async (dto, success, error) => {
     var formData = this.cf.getFormData(true)
     console.log("Formdata, obj:", formData)
 
@@ -314,9 +249,8 @@ class MyForm extends React.Component {
     if (dto.tag.name === "passwordSignup" && dto.tag.value.length > 0) {
       const { fullName, emailSignup, passwordSignup } = formData
       let userID = Math.floor(Math.random() * 9000 + 1000)
-      this.setState({ loading: true })
-      api
-        .post(
+      try {
+        const { data } = await api.post(
           "/signup",
           JSON.stringify({
             userID,
@@ -325,86 +259,86 @@ class MyForm extends React.Component {
             password: passwordSignup,
           })
         )
-        .then((res) => {
-          console.log("signup", res.data)
-          this.setState({ email: emailSignup })
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
+
+        console.log("signup", data)
+        this.setState({ email: emailSignup })
+        if (data?.data?.done === "yes") {
+          console.log("otp block")
+          await this.cf.addTags(
+            [
+              {
+                tag: "input",
+                type: "text",
+                name: "otp",
+                "cf-questions":
+                  "Verify your account with the OTP sent to your email!",
+                "cf-input-placeholder": "Verify OTP",
+              },
+            ],
+            true
+          )
+        } else {
+          console.log("login block")
+          await this.cf.addRobotChatResponse(data + " Login instead")
+          await this.cf.addTags(this.loginFields, true)
+        }
+      } catch (err) {
+        console.log(err)
+        await this.cf.addRobotChatResponse(err.message)
+        return error()
+      }
     }
 
     /// user verification ///
     if (dto.tag.name === "otp" && dto.tag.value.length > 0) {
       const { otp } = formData
-      this.setState({ loading: true })
-      api
-        .post(
+      try {
+        const { data } = await api.post(
           "/verify/user",
           JSON.stringify({
             email: this.state.email,
             otp,
           })
         )
-        .then((res) => {
-          console.log("verify", res.data)
-          this.cf.addRobotChatResponse("Your account is verified")
-          this.cf.addTags(this.loginFields, true)
-          if (isPlatform("hybrid"))
-            Storage.set({ key: "token", value: res.data.data.token })
-          else
-            localStorage.setItem("token", JSON.stringify(res.data.data.token))
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
+        console.log("verify", data)
+        localStorage.setItem("token", JSON.stringify(data.data.token))
+        await this.cf.addRobotChatResponse(data.msg)
+        await this.cf.addRobotChatResponse("Let's log you in")
+        await this.cf.addTags(this.loginFields, true)
+      } catch (err) {
+        console.log(err)
+        await this.cf.addRobotChatResponse(err.msg)
+        return error()
+      }
     }
 
     /// login ///
     if (dto.tag.name === "passwordLogin" && dto.tag.value.length > 0) {
       const { emailLogin, passwordLogin } = formData
-      this.setState({ loading: true })
-      api
-        .post(
+      try {
+        const { data } = await api.post(
           "/login/create-session",
-          JSON.stringify({
-            email: emailLogin,
-            password: passwordLogin,
-          })
+          JSON.stringify({ email: emailLogin, password: passwordLogin })
         )
-        .then((res) => {
-          console.log("login", res.data)
-          this.setState({
-            authUser: res.data.data,
-            beneficiaryFlow: res.data.question,
-          })
-          if (isPlatform("hybrid"))
-            Storage.set({ key: "user", value: res.data })
-          else sessionStorage.setItem("user", JSON.stringify(res.data))
+        console.log("login", data)
+        this.setState({
+          authUser: data.data,
+          beneficiaryFlow: data.question,
         })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
-    }
 
-    // intermediate for login api call
-    if (dto.tag.name === "loginConfirm") {
-      console.log(dto.tag.value)
-      if (dto.tag.value[0] === "yes") {
-        if (this.state.authUser) {
-          this.cf.addRobotChatResponse("You are successfully Logged In")
-          this.cf.addTags(this.policyField, true) // appending policyField as soon as we are logged in
+        sessionStorage.setItem("user", JSON.stringify(data))
+        await this.checkUnboughtPolicies(dto, success, error) // check for unbought policies for that user
+        await this.cf.addRobotChatResponse("You are successfully Logged In")
+
+        // appending policyField as soon as we are logged in
+        if (this.state?.unboughtPolicies?.length > 0) {
+          await this.cf.addTags(this.policyField, true)
         } else {
-          error()
+          await this.cf.addTags(this.policyField2, true)
         }
-      } else {
-        window.location.reload(false)
+      } catch (err) {
+        console.log(err)
+        return error()
       }
     }
 
@@ -424,7 +358,29 @@ class MyForm extends React.Component {
     // if user wanna buy policies for themselves or others
     if (dto.tag.name === "question" && dto.tag.value[0]) {
       console.log(dto.tag.value[0])
-      this.newBeneficiaryForm(dto.tag.value[0], dto, success, error)
+      if (dto.tag.value[0] === "self") {
+        this.newBeneficiaryForm("self", "me", dto, success, error)
+      } else {
+        try {
+          const { data } = await api.get("/getrelations")
+          console.log("relation flow", data)
+          await this.cf.addTags(data.addRelation, true)
+        } catch (err) {
+          console.log(err)
+          return error()
+        }
+      }
+    }
+
+    if (dto.tag.name === "benificiaryRelation" && dto.tag.value[0]) {
+      console.log(dto.tag.value[0])
+      await this.newBeneficiaryForm(
+        "others",
+        dto.tag.value[0],
+        dto,
+        success,
+        error
+      )
     }
 
     // check if beneficiary already exists
@@ -434,50 +390,43 @@ class MyForm extends React.Component {
       dto.tag.value.length > 0
     ) {
       console.log(dto.tag.value)
-      this.setState({ loading: true, beneficiaryID: dto.tag.value })
-      api
-        .post(
+      this.setState({ beneficiaryID: dto.tag.value })
+      try {
+        const { data } = await api.post(
           "/findbeneficiary",
           JSON.stringify({ beneficiaryID: dto.tag.value })
         )
-        .then((res) => {
-          console.log("checkBeni", res.data)
-          this.setState({ beneficiaryID: dto.tag.value })
-          if (res.data.exist) {
-            // this.cf.addTags(res.data.asktoAddnew, true)
-            this.cf.addRobotChatResponse("Benificiary already exists")
-            this.cf.addTags(this.browsePolicy, true)
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
+        console.log("checkBeni", data)
+        this.setState({ beneficiaryID: dto.tag.value })
+        if (data.exist) {
+          // this.cf.addTags(res.data.asktoAddnew, true)
+          await this.cf.addRobotChatResponse("Beneficiary already exists")
+          await this.cf.addTags(this.browsePolicy, true)
+        }
+      } catch (err) {
+        console.log(err)
+        return error()
+      }
     } else if (this.state.userType === "self") {
       this.setState({
-        loading: true,
         beneficiaryID: this.state.authUser.userId,
       })
-      api
-        .post(
+      try {
+        const { data } = await api.post(
           "/findbeneficiary",
           JSON.stringify({ beneficiaryID: this.state.authUser.userId })
         )
-        .then((res) => {
-          console.log("checkBeni", res.data)
-          this.setState({ beneficiaryID: this.state.authUser.userId })
-          if (res.data.exist) {
-            // this.cf.addTags(res.data.asktoAddnew, true)
-            this.cf.addRobotChatResponse("Benificiary already exists")
-            this.cf.addTags(this.browsePolicy, true)
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-          error()
-        })
-        .finally(() => this.setState({ loading: false }))
+        console.log("checkBeni", data)
+        this.setState({ beneficiaryID: this.state.authUser.userId })
+        if (data.exist) {
+          // this.cf.addTags(res.data.asktoAddnew, true)
+          await this.cf.addRobotChatResponse("Beneficiary already exists")
+          await this.cf.addTags(this.browsePolicy, true)
+        }
+      } catch (err) {
+        console.log(err)
+        return error()
+      }
     }
 
     // if beneficiary already exists
@@ -485,16 +434,13 @@ class MyForm extends React.Component {
       console.log(dto.tag.value[0])
       if (dto.tag.value[0] === "continue") {
         // skipping the beneficiary form
-        if (this.state.auth) this.cf.remapTagsAndStartFrom(16, true, true)
-        else this.cf.remapTagsAndStartFrom(20, true, true)
+        if (this.state.auth) await this.cf.remapTagsAndStartFrom(14, true, true)
+        else await this.cf.remapTagsAndStartFrom(18, true, true)
       } else {
         // this.cf.remapTagsAndStartFrom(16, true, true)
         // this.logoutHandler()
-        this.newBeneficiaryForm("others", dto, success, error)
+        await this.newBeneficiaryForm("others", dto, success, error)
       }
-      // else if (dto.tag.value[0] === "add other benificiary") {
-      //   this.newBeneficiaryForm("others", dto, success, error)
-      // }
     }
 
     // adding beneficiary if beneficiary doesn't exist
@@ -513,97 +459,10 @@ class MyForm extends React.Component {
       }
     }
 
-    // if (dto.tag.name === "choosePolicy" && dto.tag.value[0]) {
-    //   console.log(dto.tag.value[0])
-    //   this.setState({ loading: true })
-    //   api
-    //     .post(
-    //       "/bookpolicy",
-    //       JSON.stringify({
-    //         beneficiaryID: this.state.beneficiaryID,
-    //         policyName: dto.tag.value[0],
-    //       })
-    //     )
-    //     .then((res) => {
-    //       console.log("policy booked", res.data)
-    //       this.setState({ policyName: dto.tag.value[0] })
-    //       this.cf.addRobotChatResponse(
-    //         `You've successfully booked Policy : ${dto.tag.value[0]}`
-    //       )
-    //       this.cf.addTags(res.data.question, true)
-    //     })
-    //     .catch((err) => {
-    //       console.log(err)
-    //       error()
-    //     })
-    //     .finally(() => this.setState({ loading: false }))
-    // }
-
-    // if (dto.tag.name === "makePayment" && dto.tag.value[0]) {
-    //   console.log(dto.tag.value[0])
-    //   console.log(formData.choosePolicy[0])
-    //   if (dto.tag.value[0] === "yes") {
-    //     this.setState({ loading: true })
-    //     api
-    //       .post(
-    //         "/buypolicy",
-    //         JSON.stringify({
-    //           beneficiaryID: this.state.beneficiaryID,
-    //           policyName: this.state.policyName,
-    //         })
-    //       )
-    //       .then((res) => {
-    //         this.cf.addTags(res.data.question, true)
-    //       })
-    //       .then((res) => {
-    //         console.log("policy purchased", res.data)
-    //         this.cf.addRobotChatResponse(
-    //           `You've successfully purchased Policy : ${this.state.policyName}`
-    //         )
-
-    //         this.setState({ unboughtPolicies: res.data.unboughtUserPolicy })
-    //       })
-    //       .catch((err) => {
-    //         console.log(err)
-    //         error()
-    //       })
-    //       .finally(() => this.setState({ loading: false }))
-    //   } else {
-    //     this.submitCallback()
-    //   }
-    // }
-
-    // if (dto.tag.name === "noUnbought" && dto.tag.value[0]) {
-    //   console.log(dto.tag.value[0])
-    //   if (dto.tag.value[0] === "addbeni") {
-    //     // backtrack
-    //   }
-    // }
-
-    // if (dto.tag.name === "unbought" && dto.tag.value[0]) {
-    //   console.log(dto.tag.value[0])
-    //   if (dto.tag.value[0] === "yes") {
-    //     this.getUnboughtPolicies(dto, success, error)
-    //   } else {
-    //     this.logoutHandler()
-    //   }
-    // }
-
     success()
   }
 
   componentDidMount() {
-    // var x = document.cookie.replace(
-    //   /(?:(?:^|.*;\s*)InsuranceApp\s*\=\s*([^;]*).*$)|^.*$/,
-    //   "$1"
-    // )
-    // console.log(x)
-    // if (this.state.isUser) {
-    //   var { data } = JSON.parse(sessionStorage.getItem("user"))
-    //   var loggedIn = data ? true : false
-    // }
-    // var user = JSON.parse(sessionStorage.getItem("user"))
-
     this.cf = ConversationalForm.startTheConversation({
       options: {
         theme: "purple",
@@ -613,18 +472,8 @@ class MyForm extends React.Component {
         submitCallback: this.submitCallback,
         preventAutoFocus: true,
         hideUserInputOnNoneTextInput: true,
-        // userInterfaceOptions: {
-        //   controlElementsInAnimationDelay: 1000,
-        //   robot: {
-        //     robotResponseTime: 1000,
-        //     chainedResponseTime: 1000,
-        //   },
-        // },
-        // loadExternalStyleSheet: false
       },
       tags: this.initForm,
-      // tags: auth ? this.loginFields : this.signupFields,
-      // tags: loggedIn ? this.policyField : this.initForm,
     })
     this.elem.appendChild(this.cf.el)
   }
@@ -633,7 +482,7 @@ class MyForm extends React.Component {
     var formDataSerialized = this.cf.getFormData(true)
     console.log("Formdata, obj:", formDataSerialized)
     this.cf.addRobotChatResponse("You are done. Thank You")
-    this.props.data.logout()
+    // this.props.data.logout()
   }
   render() {
     return (
