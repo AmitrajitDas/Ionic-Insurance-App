@@ -23,6 +23,7 @@ const Breakups = ({
   setIsSelected,
   setIsUnbought,
   setIsOpen,
+  savedPolicy,
 }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -190,21 +191,23 @@ const Breakups = ({
               justifyContent: "space-between",
             }}
           >
+            {!savedPolicy && (
+              <IonButton
+                slot='start'
+                shape='round'
+                color='tertiary'
+                expand='full'
+                className='card-btn'
+                onClick={saveHandler}
+              >
+                Save
+              </IonButton>
+            )}
             <IonButton
               slot='start'
               shape='round'
               color='tertiary'
-              expand='full'
-              className='card-btn'
-              onClick={saveHandler}
-            >
-              Save
-            </IonButton>
-            <IonButton
-              slot='start'
-              shape='round'
-              color='tertiary'
-              expand='full'
+              expand={!savedPolicy && "full"}
               className='card-btn'
               onClick={leaveHandler}
             >
