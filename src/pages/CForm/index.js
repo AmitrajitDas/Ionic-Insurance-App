@@ -23,6 +23,7 @@ class MyForm extends React.Component {
       addbeneficiaryFlow: [],
       userType: "",
       beneficiaryID: "",
+      benificiaryRelation: "",
       continue: false,
       policyName: "",
       unboughtPolicies: [],
@@ -161,14 +162,20 @@ class MyForm extends React.Component {
   }
 
   newBeneficiaryForm = async (userType, relation, dto, success, error) => {
-    this.setState({ userType })
+    this.setState({ userType, benificiaryRelation: relation })
     try {
       const { data } = await api.get(`/getdetails/${userType}/${relation}`)
       console.log("getDetailForm", data)
-      await this.cf.addTags(data.addBeneficiary, true)
+      if (data.exist) {
+        await this.cf.addTags(data.asktoAddnew, true)
+        await this.setState({ beneficiaryID: data.beneficiaryID })
+        // await this.cf.addTags(this.browsePolicy, true)
+      } else {
+        await this.cf.addTags(data.addBeneficiary, true)
+      }
     } catch (err) {
       console.log(err)
-      error()
+      return error()
     }
   }
 
@@ -195,14 +202,18 @@ class MyForm extends React.Component {
           occupation: occupation[0],
           benificiaryRelation:
             userType === "self" ? "self" : benificiaryRelation[0],
-          gender: sex[0],
+          gender: sex && sex[0],
           fullName: benifullName,
           age,
         })
       )
 
       console.log("addBeni", data)
-      await this.cf.addTags(this.browsePolicy, true) // appending browsePolicy flow
+      if (data.msg === "give right User ID!")
+        await this.cf.addRobotChatResponse("Invalid ID")
+      else {
+        await this.cf.addTags(this.browsePolicy, true) // appending browsePolicy flow
+      }
     } catch (err) {
       console.log(err)
       return error()
@@ -338,6 +349,7 @@ class MyForm extends React.Component {
         }
       } catch (err) {
         console.log(err)
+        await this.cf.addRobotChatResponse(err.msg)
         return error()
       }
     }
@@ -399,9 +411,7 @@ class MyForm extends React.Component {
         console.log("checkBeni", data)
         this.setState({ beneficiaryID: dto.tag.value })
         if (data.exist) {
-          // this.cf.addTags(res.data.asktoAddnew, true)
-          await this.cf.addRobotChatResponse("Beneficiary already exists")
-          await this.cf.addTags(this.browsePolicy, true)
+          await this.cf.addTags(data.asktoAddnew, true)
         }
       } catch (err) {
         console.log(err)
@@ -434,17 +444,33 @@ class MyForm extends React.Component {
       console.log(dto.tag.value[0])
       if (dto.tag.value[0] === "continue") {
         // skipping the beneficiary form
-        if (this.state.auth) await this.cf.remapTagsAndStartFrom(14, true, true)
-        else await this.cf.remapTagsAndStartFrom(18, true, true)
+        console.log("continue")
+        await this.cf.addTags(this.browsePolicy, true)
       } else {
         // this.cf.remapTagsAndStartFrom(16, true, true)
         // this.logoutHandler()
-        await this.newBeneficiaryForm("others", dto, success, error)
+        try {
+          const { data } = await api.get("/getrelations")
+          console.log("relation flow", data)
+          await this.cf.addTags(data.addRelation, true)
+          // await this.newBeneficiaryForm("others", dto, success, error)
+        } catch (err) {
+          console.log(err)
+          return error()
+        }
       }
     }
 
     // adding beneficiary if beneficiary doesn't exist
-    if (dto.tag.name === "sex" && dto.tag.value[0] && !this.state.continue) {
+
+    if (
+      (dto.tag.name === "sex" && dto.tag.value[0]) ||
+      (dto.tag.name === "occupation" &&
+        dto.tag.value[0] &&
+        this.state.benificiaryRelation !== "friend" &&
+        this.state.benificiaryRelation !== "me")
+    ) {
+      //this.state.continue
       console.log(dto.tag.value)
       this.addBeneficiary(dto, formData, success, error)
     }
