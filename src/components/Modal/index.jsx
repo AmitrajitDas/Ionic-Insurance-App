@@ -8,6 +8,7 @@ import {
   IonButtons,
   IonButton,
 } from "@ionic/react"
+import { useHistory } from "react-router"
 import Card from "../Card"
 import Breakups from "../Breakups"
 import Loader from "../Loader/index"
@@ -21,6 +22,8 @@ const Modal = ({
   beneficiaryID,
   userID,
 }) => {
+  const history = useHistory()
+
   const [isOpen, setIsOpen] = useState(modalOpen)
   const [policies, setPolicies] = useState([])
   const [unboughtPolicies, setUnboughtPolicies] = useState([])
@@ -70,6 +73,11 @@ const Modal = ({
     if (!isUnbought && savedPolicy) setIsUnbought(true)
   }
 
+  const homeRouteHandler = (e) => {
+    e.preventDefault()
+    window.location.reload(false)
+  }
+
   return (
     <IonModal isOpen={isOpen}>
       <IonHeader>
@@ -86,6 +94,35 @@ const Modal = ({
       <IonContent className='ion-padding'>
         {loading && <Loader loading={loading} />}
         {error && <Alert error={error} />}
+        {policies.length === 0 && unboughtPolicies.length === 0 && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                fontFamily: "Merriweather Sans",
+                fontSize: "15px",
+                fontWeight: "400",
+                color: "#202666",
+              }}
+            >
+              No Policies available for you currently
+            </div>
+            <IonButton
+              shape='round'
+              color='tertiary'
+              expand='full'
+              className='card-btn'
+              style={{
+                display: "flex",
+                justifyContent: "center",
+              }}
+              onClick={homeRouteHandler}
+            >
+              Go Back
+            </IonButton>
+          </>
+        )}
         {!isSelected ? (
           policies.map((policy, i) => (
             <Card
