@@ -13,6 +13,7 @@ import Alert from "../Alert"
 import Loader from "../Loader/index"
 import InsuranceIMG from "../../assets/insurance.jpg"
 import { cardOutline } from "ionicons/icons"
+import useAuth from "../../context/useAuth"
 
 const Breakups = ({
   selectedPolicy,
@@ -22,15 +23,18 @@ const Breakups = ({
   isUnbought,
   setIsSelected,
   setIsUnbought,
-  setIsOpen,
   savedPolicy,
+  setIsOpen,
 }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [purchased, setPurchased] = useState(false)
   const [booked, setBooked] = useState(false)
+  const [removed, setRemoved] = useState(false)
 
   const history = useHistory()
+
+  // const { modalOpen, openModal, closeModal } = useAuth()
 
   const price = selectedPolicy.basePrice
   const gstprice = (price * selectedPolicy.gst) / 100
@@ -94,12 +98,37 @@ const Breakups = ({
     setIsOpen(false)
   }
 
+  const removeHandler = (e) => {
+    e.preventDefault()
+    setLoading(true)
+    api
+      .post(
+        "/removeunboughtpolicy",
+        JSON.stringify({
+          productID: selectedPolicy.policyID,
+          buyerID: userID,
+        })
+      )
+      .then((res) => {
+        console.log("policy removed", res.data)
+        setRemoved(true)
+      })
+      .catch((err) => {
+        setError(true)
+        console.log(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
+
   return (
     <>
       {loading && <Loader loading={loading} />}
       {error && <Alert error={error} />}
-      {purchased && <Alert sucess={purchased} />}
-      {booked && <Alert booked={booked} />}
+      {purchased && <Alert sucess={purchased} setIsOpen={setIsOpen} />}
+      {booked && <Alert booked={booked} setIsOpen={setIsOpen} />}
+      {removed && <Alert removed={removed} setIsOpen={setIsOpen} />}
       <IonCard>
         <img src={InsuranceIMG} alt='insurance' />
         <IonItem className='ion-activated'>
@@ -191,7 +220,7 @@ const Breakups = ({
               justifyContent: "space-between",
             }}
           >
-            {!savedPolicy && (
+            {!savedPolicy ? (
               <IonButton
                 slot='start'
                 shape='round'
@@ -202,7 +231,19 @@ const Breakups = ({
               >
                 Save
               </IonButton>
+            ) : (
+              <IonButton
+                slot='start'
+                shape='round'
+                color='tertiary'
+                expand='full'
+                className='card-btn'
+                onClick={removeHandler}
+              >
+                Remove
+              </IonButton>
             )}
+
             <IonButton
               slot='start'
               shape='round'
