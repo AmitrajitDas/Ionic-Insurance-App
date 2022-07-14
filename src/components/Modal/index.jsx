@@ -7,13 +7,16 @@ import {
   IonTitle,
   IonButtons,
   IonButton,
+  IonIcon,
 } from "@ionic/react"
+import { arrowBackOutline } from "ionicons/icons"
 import { useHistory } from "react-router"
 import Card from "../Card"
 import Breakups from "../Breakups"
 import Loader from "../Loader/index"
 import Alert from "../Alert"
 import api from "../../api"
+import useAuth from "../../context/useAuth"
 
 const Modal = ({
   modalOpen,
@@ -33,6 +36,8 @@ const Modal = ({
   const [isUnbought, setIsUnbought] = useState(browseUnboughtPolicies)
   const [savedPolicy, setSavedPolicy] = useState(false)
   const [selectedPolicy, setSelectedPolicy] = useState({})
+
+  // const { modalOpen, openModal, closeModal } = useAuth()
 
   useEffect(() => {
     setLoading(true)
@@ -66,27 +71,38 @@ const Modal = ({
 
   const backHandler = (e) => {
     e.preventDefault()
-    // if(!isSelected) {
-    //   setIsOpen(false)
-    // }
+
+    // for browsing
+    if (!isSelected && !isUnbought) {
+      setIsSelected(true)
+      setIsOpen(false)
+    }
     if (isSelected && !isUnbought && !savedPolicy) setIsSelected(false)
+
+    // for unbought
     if (!isUnbought && savedPolicy) setIsUnbought(true)
+    if (isSelected && isUnbought) {
+      setIsUnbought(false)
+      setIsOpen(false)
+    }
+    // if (isSelected && !isUnbought && !savedPolicy) setIsSelected(false)
+    // if (!isUnbought && savedPolicy) setIsUnbought(true)
   }
 
   const homeRouteHandler = (e) => {
     e.preventDefault()
-    window.location.reload(false)
+    setIsOpen(false)
   }
 
   return (
     <IonModal isOpen={isOpen}>
       <IonHeader>
         <IonToolbar color='tertiary'>
-          {((isSelected && !isUnbought) || (!isSelected && isUnbought)) && (
-            <IonButtons slot='start'>
-              <IonButton onClick={backHandler}>Back</IonButton>
-            </IonButtons>
-          )}
+          <IonButtons slot='start'>
+            <IonButton onClick={backHandler}>
+              <IonIcon md={arrowBackOutline} />
+            </IonButton>
+          </IonButtons>
 
           <IonTitle>Browse and Purchase</IonTitle>
         </IonToolbar>
@@ -160,8 +176,8 @@ const Modal = ({
             setIsSelected={setIsSelected}
             isUnbought={isUnbought}
             setIsUnbought={setIsUnbought}
-            setIsOpen={setIsOpen}
             savedPolicy={savedPolicy}
+            setIsOpen={setIsOpen}
           />
         )}
       </IonContent>
