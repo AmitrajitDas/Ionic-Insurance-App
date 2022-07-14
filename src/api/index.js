@@ -10,7 +10,12 @@ const api = axios.create({
   },
 })
 
-api.interceptors.response.use(
+api.interceptors.request.use(
+  (config) => {
+    const token = JSON.parse(localStorage.getItem("user"))?.token
+    config.headers.Authorization = token ? `Bearer ${token}` : ""
+    return config
+  },
   (res) => res,
   (error) => {
     let res = error.response
