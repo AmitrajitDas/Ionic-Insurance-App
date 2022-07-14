@@ -1,11 +1,21 @@
 import React, { useState } from "react"
 import { IonAlert } from "@ionic/react"
-const Alert = ({ error, sucess, booked }) => {
+const Alert = ({ error, sucess, booked, removed, setIsOpen }) => {
   return (
     <IonAlert
-      isOpen={error || sucess || booked}
-      onDidDismiss={() => window.location.reload(false)}
-      header={error ? "Error" : sucess ? "Success" : booked ? "Booked" : null}
+      isOpen={error || sucess || booked || removed}
+      onDidDismiss={() => setIsOpen(false)}
+      header={
+        error
+          ? "Error"
+          : sucess
+          ? "Success"
+          : booked
+          ? "Booked"
+          : removed
+          ? "Removed"
+          : null
+      }
       subHeader={
         error
           ? "Your request is invalid"
@@ -13,6 +23,8 @@ const Alert = ({ error, sucess, booked }) => {
           ? "Transaction successful"
           : booked
           ? "Booking done"
+          : removed
+          ? "Policy Removed"
           : null
       }
       message={
@@ -22,6 +34,8 @@ const Alert = ({ error, sucess, booked }) => {
           ? "Thank you for the purchase!"
           : booked
           ? "Come back later when you want to purchase this premium"
+          : removed
+          ? "Your saved policy is removed successfully"
           : null
       }
       buttons={["OK"]}
