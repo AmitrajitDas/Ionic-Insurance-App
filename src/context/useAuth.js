@@ -18,6 +18,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState()
   const [loading, setLoading] = useState(false)
   const [loadingInitial, setLoadingInitial] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const history = useHistory()
   const location = useLocation()
@@ -79,6 +80,14 @@ export function AuthProvider({ children }) {
       .catch((err) => console.log(err))
   }
 
+  const openModal = () => {
+    setModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setModalOpen(false)
+  }
+
   const memoedValue = useMemo(
     () => ({
       data,
@@ -89,8 +98,11 @@ export function AuthProvider({ children }) {
       verifySignup,
       login,
       logout,
+      modalOpen,
+      openModal,
+      closeModal,
     }),
-    [data, user, loading, error]
+    [data, user, loading, error, modalOpen]
   )
 
   return (

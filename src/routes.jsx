@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { Route, Redirect } from "react-router-dom"
 import Header from "./components/Header"
 import Landing from "./pages/Landing"
@@ -8,6 +8,16 @@ import useAuth from "./context/useAuth"
 const Routes = () => {
   const { data, user, loading, error, signup, verifySignup, login, logout } =
     useAuth()
+
+  const [isOpen, setIsOpen] = useState(false)
+
+  const openModal = () => {
+    setIsOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsOpen(false)
+  }
 
   return (
     <>
@@ -28,6 +38,9 @@ const Routes = () => {
               verifySignup,
               login,
               logout,
+              isOpen,
+              openModal,
+              closeModal,
             }}
           />
         </Header>
