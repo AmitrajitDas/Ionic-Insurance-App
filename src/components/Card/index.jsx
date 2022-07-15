@@ -9,7 +9,6 @@ import {
 } from "@ionic/react"
 import Alert from "../Alert"
 import Loader from "../Loader/index"
-import api from "../../api"
 import InsuranceIMG from "../../assets/insurance.jpg"
 import "./card.styles.css"
 
@@ -81,6 +80,12 @@ const Card = ({
           <div>
             Valid for {isUnbought ? unboughtPolicy.period : policy.period} days
           </div>
+          {isUnbought && (
+            <div style={{ fontWeight: "600" }}>
+              This premium is booked for your{" "}
+              {unboughtPolicy.benificiaryRelation}, {unboughtPolicy.fullName}
+            </div>
+          )}
 
           <IonButton
             slot='start'
