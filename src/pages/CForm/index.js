@@ -248,11 +248,9 @@ class MyForm extends React.Component {
       const { data } = await api.post("/logout")
       console.log("logout", data)
       this.setState({ loading: false })
-      setTimeout(() => {
-        localStorage.clear()
-        const { history } = this.props
-        history.push("/")
-      }, 1000)
+      const { history } = this.props
+      history.push("/")
+      localStorage.clear()
     } catch (err) {
       this.setState({ loading: false })
       console.log(err)
@@ -577,6 +575,8 @@ class MyForm extends React.Component {
         } else {
           await this.cf.addTags(this.policyField2, true)
         }
+      } else {
+        await this.logoutHandler()
       }
     }
 
