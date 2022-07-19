@@ -61,6 +61,7 @@ class MyForm extends React.Component {
         tag: "input",
         type: "email",
         name: "emailSignup",
+        required: true,
         "cf-questions": "Enter your email!",
         "cf-input-placeholder": "Email",
       },
@@ -68,6 +69,7 @@ class MyForm extends React.Component {
         tag: "input",
         type: "password",
         name: "passwordSignup",
+        required: true,
         "cf-questions": "Enter a password!",
         "cf-input-placeholder": "Password",
       },
@@ -78,12 +80,14 @@ class MyForm extends React.Component {
         tag: "input",
         type: "email",
         name: "emailLogin",
+        required: true,
         "cf-questions": "Enter your email!",
         "cf-input-placeholder": "Email",
       },
       {
         tag: "input",
         type: "password",
+        required: true,
         name: "passwordLogin",
         "cf-questions": "Enter your password!",
         "cf-input-placeholder": "Password",
@@ -209,7 +213,7 @@ class MyForm extends React.Component {
             userType === "self" ? "self" : benificiaryRelation[0],
           gender: sex && sex[0],
           fullName: benifullName,
-          age,
+          age: Math.abs(age),
         })
       )
 
