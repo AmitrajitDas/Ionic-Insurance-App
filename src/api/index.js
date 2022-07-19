@@ -1,13 +1,12 @@
 import axios from "axios"
 
-axios.defaults.withCredentials = true
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_DEV_API}`,
+  baseURL: `${process.env.REACT_APP_PROD_API}`,
   // withCrendentials: true,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
+  // headers: {
+  //   Accept: "application/json",
+  //   "Content-Type": "application/json",
+  // },
 })
 
 api.interceptors.request.use(
